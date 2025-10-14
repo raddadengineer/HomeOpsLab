@@ -60,7 +60,7 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
   if (!isOpen || !node) return null;
 
   return (
-    <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-96 bg-card/95 backdrop-blur-xl border-l border-border shadow-2xl z-50 overflow-y-auto">
+    <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-96 bg-card/95 backdrop-blur-xl border-l border-border shadow-2xl z-50 overflow-y-auto modern-scrollbar">
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div>

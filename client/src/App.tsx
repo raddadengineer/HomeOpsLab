@@ -47,7 +47,7 @@ function App() {
                 </div>
                 <ThemeToggle />
               </header>
-              <main className="flex-1 overflow-auto">
+              <main className="flex-1 overflow-auto modern-scrollbar">
                 <Router />
               </main>
             </div>
