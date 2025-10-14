@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "./status-badge";
-import { ExternalLink, MoreVertical } from "lucide-react";
+import { ExternalLink, MoreVertical, Server, Router, Network, Wifi, HardDrive, Box } from "lucide-react";
 import type { Service } from "@shared/schema";
 
 interface NodeCardProps {
@@ -10,24 +10,65 @@ interface NodeCardProps {
   name: string;
   ip: string;
   osType: string;
+  deviceType?: string;
   status: "online" | "offline" | "degraded" | "unknown";
   tags?: string[];
   services?: Service[];
+  storageTotal?: string;
+  storageUsed?: string;
   onClick?: () => void;
   onEdit?: () => void;
 }
+
+const getDeviceIcon = (deviceType?: string) => {
+  switch (deviceType) {
+    case 'router': return Router;
+    case 'switch': return Network;
+    case 'access-point': return Wifi;
+    case 'nas': return HardDrive;
+    case 'container': return Box;
+    default: return Server;
+  }
+};
+
+const getDeviceLabel = (deviceType?: string) => {
+  switch (deviceType) {
+    case 'router': return 'Router';
+    case 'switch': return 'Switch';
+    case 'access-point': return 'Access Point';
+    case 'nas': return 'NAS';
+    case 'container': return 'Container';
+    default: return 'Server';
+  }
+};
 
 export function NodeCard({ 
   id, 
   name, 
   ip, 
   osType, 
+  deviceType,
   status, 
   tags = [], 
   services = [],
+  storageTotal,
+  storageUsed,
   onClick,
   onEdit
 }: NodeCardProps) {
+  const DeviceIcon = getDeviceIcon(deviceType);
+  const deviceLabel = getDeviceLabel(deviceType);
+  
+  // Safely calculate storage percentage with NaN handling
+  const storagePercent = storageTotal && storageUsed 
+    ? (() => {
+        const total = parseFloat(storageTotal);
+        const used = parseFloat(storageUsed);
+        if (isNaN(total) || isNaN(used) || total <= 0) return null;
+        return Math.round((used / total) * 100);
+      })()
+    : null;
+
   return (
     <Card 
       className="hover-elevate cursor-pointer transition-all duration-200 group" 
@@ -38,7 +79,7 @@ export function NodeCard({
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0 group-hover:from-primary/30 group-hover:to-primary/20 transition-all duration-200">
-              <ServerIcon className="h-6 w-6 text-primary" />
+              <DeviceIcon className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-base truncate" data-testid={`text-node-name-${id}`}>{name}</h3>
@@ -62,8 +103,23 @@ export function NodeCard({
       <CardContent className="pb-3">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           <StatusBadge status={status} />
+          <Badge variant="outline" className="text-xs">{deviceLabel}</Badge>
           <Badge variant="outline" className="text-xs">{osType}</Badge>
         </div>
+        {deviceType === 'nas' && storageTotal && storageUsed && storagePercent !== null && (
+          <div className="mt-2 p-2 rounded-md bg-muted/50">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-muted-foreground">Storage</span>
+              <span className="font-mono">{storageUsed}/{storageTotal} GB ({storagePercent}%)</span>
+            </div>
+            <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${storagePercent}%` }}
+              />
+            </div>
+          </div>
+        )}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {tags.map((tag) => (
@@ -97,10 +153,3 @@ export function NodeCard({
     </Card>
   );
 }
-
-const ServerIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <rect x="2" y="6" width="20" height="8" rx="1" />
-    <path d="M6 10h.01M6 14h.01" />
-  </svg>
-);

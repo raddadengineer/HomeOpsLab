@@ -20,6 +20,18 @@ export default function Dashboard() {
   const totalNodes = nodes.length;
   const recentNodes = nodes.slice(0, 3);
 
+  // Calculate NAS storage with safe numeric parsing
+  const nasDevices = nodes.filter(n => n.deviceType === 'nas' && n.storageTotal && n.storageUsed);
+  const totalStorage = nasDevices.reduce((acc, n) => {
+    const val = parseFloat(n.storageTotal || '0');
+    return acc + (isNaN(val) ? 0 : val);
+  }, 0);
+  const usedStorage = nasDevices.reduce((acc, n) => {
+    const val = parseFloat(n.storageUsed || '0');
+    return acc + (isNaN(val) ? 0 : val);
+  }, 0);
+  const storagePercent = totalStorage > 0 ? Math.round((usedStorage / totalStorage) * 100) : 0;
+
   return (
     <div className="p-6 space-y-6">
       <div className="mb-8">
@@ -41,13 +53,14 @@ export default function Dashboard() {
         />
         <StatCard 
           title="Services" 
-          value={nodes.filter(n => n.serviceUrl).length} 
+          value={nodes.reduce((acc, n) => acc + (n.services?.length || 0), 0)} 
           icon={Network}
         />
         <StatCard 
           title="Storage" 
-          value="12.4 TB" 
+          value={totalStorage > 0 ? `${usedStorage.toFixed(1)}/${totalStorage.toFixed(1)} GB` : 'No NAS'} 
           icon={HardDrive}
+          trend={totalStorage > 0 ? { value: `${storagePercent}% used`, positive: storagePercent < 80 } : undefined}
         />
       </div>
 
@@ -79,10 +92,19 @@ export default function Dashboard() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Storage Usage</span>
-                  <span className="font-semibold text-base">8.2/12.4 TB</span>
+                  <span className="font-semibold text-base">
+                    {totalStorage > 0 ? `${usedStorage.toFixed(1)}/${totalStorage.toFixed(1)} GB` : 'No NAS devices'}
+                  </span>
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-2/3 bg-gradient-to-r from-yellow-500 to-amber-400 transition-all duration-300" />
+                  <div 
+                    className={`h-full transition-all duration-300 ${
+                      storagePercent > 80 ? 'bg-gradient-to-r from-red-500 to-orange-400' : 
+                      storagePercent > 60 ? 'bg-gradient-to-r from-yellow-500 to-amber-400' : 
+                      'bg-gradient-to-r from-green-500 to-emerald-400'
+                    }`}
+                    style={{ width: `${storagePercent}%` }}
+                  />
                 </div>
               </div>
             </div>
@@ -141,9 +163,12 @@ export default function Dashboard() {
                 name={node.name}
                 ip={node.ip}
                 osType={node.osType}
+                deviceType={node.deviceType}
                 status={node.status as "online" | "offline" | "degraded" | "unknown"}
                 tags={node.tags}
-                serviceUrl={node.serviceUrl || undefined}
+                services={node.services}
+                storageTotal={node.storageTotal || undefined}
+                storageUsed={node.storageUsed || undefined}
                 onClick={() => setSelectedNode(node)}
               />
             ))}
@@ -159,9 +184,12 @@ export default function Dashboard() {
           name: selectedNode.name,
           ip: selectedNode.ip,
           osType: selectedNode.osType,
+          deviceType: selectedNode.deviceType,
           status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
           tags: selectedNode.tags,
-          serviceUrl: selectedNode.serviceUrl || undefined,
+          services: selectedNode.services,
+          storageTotal: selectedNode.storageTotal || undefined,
+          storageUsed: selectedNode.storageUsed || undefined,
           uptime: selectedNode.uptime || undefined,
           lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
         } : undefined}

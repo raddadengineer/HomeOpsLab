@@ -18,9 +18,12 @@ interface NodeDetailPanelProps {
     name: string;
     ip: string;
     osType: string;
+    deviceType?: string;
     status: "online" | "offline" | "degraded" | "unknown";
     tags: string[];
     services?: Service[];
+    storageTotal?: string;
+    storageUsed?: string;
     uptime?: string;
     lastSeen?: string;
   };

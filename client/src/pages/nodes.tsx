@@ -62,9 +62,12 @@ export default function NodesPage() {
                 name={node.name}
                 ip={node.ip}
                 osType={node.osType}
+                deviceType={node.deviceType}
                 status={node.status as "online" | "offline" | "degraded" | "unknown"}
                 tags={node.tags}
                 services={node.services}
+                storageTotal={node.storageTotal || undefined}
+                storageUsed={node.storageUsed || undefined}
                 onClick={() => setSelectedNode(node)}
                 onEdit={() => setEditingNode(node)}
               />
@@ -93,9 +96,12 @@ export default function NodesPage() {
           name: selectedNode.name,
           ip: selectedNode.ip,
           osType: selectedNode.osType,
+          deviceType: selectedNode.deviceType,
           status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
           tags: selectedNode.tags,
           services: selectedNode.services,
+          storageTotal: selectedNode.storageTotal || undefined,
+          storageUsed: selectedNode.storageUsed || undefined,
           uptime: selectedNode.uptime || undefined,
           lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
         } : undefined}
@@ -114,9 +120,12 @@ export default function NodesPage() {
           name: editingNode.name,
           ip: editingNode.ip,
           osType: editingNode.osType,
+          deviceType: editingNode.deviceType,
           status: editingNode.status,
           tags: editingNode.tags,
           services: editingNode.services,
+          storageTotal: editingNode.storageTotal || undefined,
+          storageUsed: editingNode.storageUsed || undefined,
         } : undefined}
       />
     </div>

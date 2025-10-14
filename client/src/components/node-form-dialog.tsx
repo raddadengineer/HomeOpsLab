@@ -27,9 +27,12 @@ interface NodeFormDialogProps {
     name: string;
     ip: string;
     osType: string;
+    deviceType?: string;
     status: string;
     tags: string[];
     services?: Service[];
+    storageTotal?: string;
+    storageUsed?: string;
   };
 }
 
@@ -43,9 +46,12 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
       name: node?.name || "",
       ip: node?.ip || "",
       osType: node?.osType || "",
+      deviceType: (node?.deviceType as any) || "server",
       status: node?.status || "unknown",
       tags: node?.tags?.join(", ") || "",
       services: node?.services || [],
+      storageTotal: node?.storageTotal || "",
+      storageUsed: node?.storageUsed || "",
     },
   });
 
@@ -60,9 +66,12 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
         name: node?.name || "",
         ip: node?.ip || "",
         osType: node?.osType || "",
+        deviceType: (node?.deviceType as any) || "server",
         status: node?.status || "unknown",
         tags: node?.tags?.join(", ") || "",
         services: node?.services || [],
+        storageTotal: node?.storageTotal || "",
+        storageUsed: node?.storageUsed || "",
       });
     }
   }, [open, node, form]);
@@ -121,9 +130,12 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
       name: values.name,
       ip: values.ip,
       osType: values.osType,
+      deviceType: values.deviceType,
       status: values.status,
       tags: tagsArray,
       services: values.services || [],
+      storageTotal: values.storageTotal,
+      storageUsed: values.storageUsed,
     };
 
     if (isEdit) {
@@ -185,6 +197,61 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="deviceType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Device Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-device-type">
+                        <SelectValue placeholder="Select device type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="server">Server</SelectItem>
+                      <SelectItem value="router">Router</SelectItem>
+                      <SelectItem value="switch">Switch</SelectItem>
+                      <SelectItem value="access-point">Access Point</SelectItem>
+                      <SelectItem value="nas">Network Attached Storage (NAS)</SelectItem>
+                      <SelectItem value="container">Container</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {form.watch("deviceType") === "nas" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="storageTotal"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Storage (GB)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" step="0.1" placeholder="e.g. 1000" {...field} data-testid="input-storage-total" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="storageUsed"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Used Storage (GB)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" step="0.1" placeholder="e.g. 450" {...field} data-testid="input-storage-used" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
             <FormField
               control={form.control}
               name="status"
