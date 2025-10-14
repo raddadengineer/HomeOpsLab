@@ -125,7 +125,7 @@ export default function NetworkPage() {
           osType: selectedNode.osType,
           status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
           tags: selectedNode.tags,
-          serviceUrl: selectedNode.serviceUrl || undefined,
+          services: selectedNode.services,
           uptime: selectedNode.uptime || undefined,
           lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
         } : undefined}
@@ -141,7 +141,7 @@ export default function NetworkPage() {
           osType: editingNode.osType,
           status: editingNode.status,
           tags: editingNode.tags,
-          serviceUrl: editingNode.serviceUrl || undefined,
+          services: editingNode.services,
         } : undefined}
       />
     </div>

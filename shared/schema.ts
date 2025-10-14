@@ -3,6 +3,13 @@ import { pgTable, text, varchar, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const serviceSchema = z.object({
+  name: z.string().min(1, "Service name is required"),
+  url: z.string().url("Must be a valid URL"),
+});
+
+export type Service = z.infer<typeof serviceSchema>;
+
 export const nodes = pgTable("nodes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -10,7 +17,7 @@ export const nodes = pgTable("nodes", {
   osType: text("os_type").notNull(),
   status: text("status").notNull().default('unknown'),
   tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
-  serviceUrl: text("service_url"),
+  services: jsonb("services").notNull().default('[]').$type<Service[]>(),
   position: jsonb("position").default({ x: 0, y: 0 }),
   uptime: text("uptime"),
   lastSeen: timestamp("last_seen").defaultNow(),
@@ -31,6 +38,8 @@ export const insertNodeSchema = createInsertSchema(nodes).omit({
   createdAt: true,
   updatedAt: true,
   lastSeen: true,
+}).extend({
+  services: z.array(serviceSchema).default([]),
 });
 
 export const insertEdgeSchema = createInsertSchema(edges).omit({

@@ -7,6 +7,7 @@ import { StatusBadge } from "./status-badge";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import type { Service } from "@shared/schema";
 
 interface NodeDetailPanelProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ interface NodeDetailPanelProps {
     osType: string;
     status: "online" | "offline" | "degraded" | "unknown";
     tags: string[];
-    serviceUrl?: string;
+    services?: Service[];
     uptime?: string;
     lastSeen?: string;
   };
@@ -126,16 +127,24 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
           </TabsContent>
 
           <TabsContent value="services" className="space-y-4 mt-4">
-            {node.serviceUrl ? (
-              <Button 
-                variant="outline" 
-                className="w-full justify-start gap-2"
-                onClick={() => console.log('Opening:', node.serviceUrl)}
-                data-testid="button-open-service"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Open Web Interface
-              </Button>
+            {node.services && node.services.length > 0 ? (
+              <div className="space-y-2">
+                {node.services.map((service, index) => (
+                  <Button 
+                    key={index}
+                    variant="outline" 
+                    className="w-full justify-start gap-2"
+                    onClick={() => window.open(service.url, '_blank', 'noopener,noreferrer')}
+                    data-testid={`button-open-service-${index}`}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <div className="flex-1 text-left">
+                      <div className="font-medium">{service.name}</div>
+                      <div className="text-xs text-muted-foreground font-mono truncate">{service.url}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground">No services configured</p>
             )}

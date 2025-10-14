@@ -64,7 +64,7 @@ export default function NodesPage() {
                 osType={node.osType}
                 status={node.status as "online" | "offline" | "degraded" | "unknown"}
                 tags={node.tags}
-                serviceUrl={node.serviceUrl || undefined}
+                services={node.services}
                 onClick={() => setSelectedNode(node)}
                 onEdit={() => setEditingNode(node)}
               />
@@ -95,7 +95,7 @@ export default function NodesPage() {
           osType: selectedNode.osType,
           status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
           tags: selectedNode.tags,
-          serviceUrl: selectedNode.serviceUrl || undefined,
+          services: selectedNode.services,
           uptime: selectedNode.uptime || undefined,
           lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
         } : undefined}
@@ -116,7 +116,7 @@ export default function NodesPage() {
           osType: editingNode.osType,
           status: editingNode.status,
           tags: editingNode.tags,
-          serviceUrl: editingNode.serviceUrl || undefined,
+          services: editingNode.services,
         } : undefined}
       />
     </div>

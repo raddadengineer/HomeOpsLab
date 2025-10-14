@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "./status-badge";
 import { ExternalLink, MoreVertical } from "lucide-react";
+import type { Service } from "@shared/schema";
 
 interface NodeCardProps {
   id: string;
@@ -11,7 +12,7 @@ interface NodeCardProps {
   osType: string;
   status: "online" | "offline" | "degraded" | "unknown";
   tags?: string[];
-  serviceUrl?: string;
+  services?: Service[];
   onClick?: () => void;
   onEdit?: () => void;
 }
@@ -23,7 +24,7 @@ export function NodeCard({
   osType, 
   status, 
   tags = [], 
-  serviceUrl,
+  services = [],
   onClick,
   onEdit
 }: NodeCardProps) {
@@ -73,21 +74,24 @@ export function NodeCard({
           </div>
         )}
       </CardContent>
-      {serviceUrl && (
-        <CardFooter className="pt-0">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full gap-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('Opening service URL:', serviceUrl);
-            }}
-            data-testid={`button-node-service-${id}`}
-          >
+      {services.length > 0 && (
+        <CardFooter className="pt-0 flex-col items-start gap-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ExternalLink className="h-3 w-3" />
-            Open Service
-          </Button>
+            <span>Services</span>
+          </div>
+          <div className="w-full flex flex-wrap gap-1.5">
+            {services.map((service, index) => (
+              <Badge 
+                key={index} 
+                variant="outline" 
+                className="text-xs"
+                data-testid={`badge-service-${id}-${index}`}
+              >
+                {service.name}
+              </Badge>
+            ))}
+          </div>
         </CardFooter>
       )}
     </Card>

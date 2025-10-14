@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertNodeSchema, type InsertNode } from "@shared/schema";
+import { insertNodeSchema, type InsertNode, type Service } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { Plus, Trash2 } from "lucide-react";
+import { useEffect } from "react";
 
 const formSchema = insertNodeSchema.extend({
   tags: z.string().optional(),
@@ -27,7 +29,7 @@ interface NodeFormDialogProps {
     osType: string;
     status: string;
     tags: string[];
-    serviceUrl?: string;
+    services?: Service[];
   };
 }
 
@@ -43,9 +45,27 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
       osType: node?.osType || "",
       status: node?.status || "unknown",
       tags: node?.tags?.join(", ") || "",
-      serviceUrl: node?.serviceUrl || "",
+      services: node?.services || [],
     },
   });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "services",
+  });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: node?.name || "",
+        ip: node?.ip || "",
+        osType: node?.osType || "",
+        status: node?.status || "unknown",
+        tags: node?.tags?.join(", ") || "",
+        services: node?.services || [],
+      });
+    }
+  }, [open, node, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertNode) => {
@@ -103,7 +123,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
       osType: values.osType,
       status: values.status,
       tags: tagsArray,
-      serviceUrl: values.serviceUrl || undefined,
+      services: values.services || [],
     };
 
     if (isEdit) {
@@ -115,7 +135,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]" data-testid="dialog-node-form">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col" data-testid="dialog-node-form">
         <DialogHeader>
           <DialogTitle data-testid="text-dialog-title">
             {isEdit ? "Edit Node" : "Add Node"}
@@ -125,7 +145,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto flex-1">
             <FormField
               control={form.control}
               name="name"
@@ -201,19 +221,63 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="serviceUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Service URL (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. https://proxmox.local" {...field} value={field.value || ""} data-testid="input-node-service-url" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <FormLabel>Services (optional)</FormLabel>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => append({ name: "", url: "" })}
+                  data-testid="button-add-service"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Service
+                </Button>
+              </div>
+              {fields.length === 0 && (
+                <p className="text-sm text-muted-foreground">No services added. Click "Add Service" to add one.</p>
               )}
-            />
+              {fields.map((field, index) => (
+                <div key={field.id} className="flex gap-2 items-start p-3 border rounded-md" data-testid={`service-item-${index}`}>
+                  <div className="flex-1 space-y-2">
+                    <FormField
+                      control={form.control}
+                      name={`services.${index}.name`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input placeholder="Service name (e.g. Docker, Plex)" {...field} data-testid={`input-service-name-${index}`} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`services.${index}.url`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input placeholder="Service URL (e.g. https://plex.local)" {...field} data-testid={`input-service-url-${index}`} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => remove(index)}
+                    data-testid={`button-remove-service-${index}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
             <DialogFooter>
               <Button
                 type="button"
