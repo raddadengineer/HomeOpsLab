@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertNodeSchema, insertEdgeSchema } from "@shared/schema";
+import { insertNodeSchema, updateNodeSchema, insertEdgeSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Node routes
@@ -38,9 +38,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/nodes/:id", async (req, res) => {
     try {
-      // Validate and whitelist only updatable fields
-      const updateSchema = insertNodeSchema.partial().omit({ position: true });
-      const validatedData = updateSchema.parse(req.body);
+      // Validate using dedicated update schema without defaults
+      const validatedData = updateNodeSchema.parse(req.body);
       
       const node = await storage.updateNode(req.params.id, validatedData);
       if (!node) {

@@ -161,6 +161,7 @@ Preferred communication style: Simple, everyday language.
 **Known Limitations**
 - Import operation validates upfront but lacks transactional rollback (acceptable for MVP)
 - Network discovery remains mocked in UI (planned for future release)
+- Metadata validation uses flexible `z.any()` schema for maximum compatibility across device types (trade-off: accepts any JSON structure vs strict per-device validation)
 
 **Planned Features** (future releases)
 - Network discovery via ARP/ICMP/mDNS (UI stubbed)
@@ -168,3 +169,4 @@ Preferred communication style: Simple, everyday language.
 - Transactional import with rollback support
 - Git sync for versioned backups
 - Additional device types based on user needs
+- Stricter metadata validation with discriminated unions per device type
