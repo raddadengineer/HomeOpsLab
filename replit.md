@@ -109,8 +109,26 @@ Preferred communication style: Simple, everyday language.
 - **JetBrains Mono**: Monospace font for technical data (IPs, URLs)
 - Google Fonts CDN for font delivery
 
-**Planned Features** (based on design docs)
-- Network discovery via ARP/ICMP/mDNS (not yet implemented)
-- Agent-based monitoring (future feature)
-- Export/import topology as JSON/YAML (routes exist but not fully implemented)
-- Git sync for versioned backups (planned)
+## Recent Changes (October 14, 2025)
+
+**Backend-Frontend Integration Complete**
+- Connected all frontend pages to PostgreSQL database via API
+- Dashboard now displays real-time stats from database
+- Nodes page performs full CRUD operations with backend
+- Network Map visualizes actual topology data from database
+- Export/import functionality fully implemented and working
+
+**API Security Enhancements**
+- Added Zod validation to all routes
+- Whitelisted fields for update operations to prevent unauthorized modifications
+- Validated import data before persistence to prevent injection attacks
+
+**Known Limitations**
+- Import operation validates upfront but lacks transactional rollback (acceptable for MVP)
+- Network discovery remains mocked in UI (planned for future release)
+
+**Planned Features** (future releases)
+- Network discovery via ARP/ICMP/mDNS (UI stubbed)
+- Agent-based monitoring for real-time metrics
+- Transactional import with rollback support
+- Git sync for versioned backups
