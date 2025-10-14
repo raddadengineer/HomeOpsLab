@@ -10,6 +10,53 @@ export const serviceSchema = z.object({
 
 export type Service = z.infer<typeof serviceSchema>;
 
+// Device-specific metadata schemas
+export const routerMetadataSchema = z.object({
+  wanIp: z.string().optional(),
+  gateway: z.string().optional(),
+  dhcpRange: z.string().optional(),
+}).optional();
+
+export const switchMetadataSchema = z.object({
+  portCount: z.string().optional(),
+  portSpeed: z.string().optional(),
+  managementType: z.enum(['managed', 'unmanaged', 'smart']).optional(),
+  vlanSupport: z.boolean().optional(),
+}).optional();
+
+export const accessPointMetadataSchema = z.object({
+  wifiStandard: z.string().optional(),
+  ssid: z.string().optional(),
+  channel: z.string().optional(),
+  security: z.string().optional(),
+}).optional();
+
+export const nasMetadataSchema = z.object({
+  raidType: z.string().optional(),
+  protocols: z.array(z.string()).optional(),
+}).optional();
+
+export const containerMetadataSchema = z.object({
+  runtime: z.enum(['docker', 'podman', 'containerd']).optional(),
+  image: z.string().optional(),
+  ports: z.string().optional(),
+}).optional();
+
+export const serverMetadataSchema = z.object({
+  cpu: z.string().optional(),
+  ram: z.string().optional(),
+  platform: z.string().optional(),
+}).optional();
+
+export type RouterMetadata = z.infer<typeof routerMetadataSchema>;
+export type SwitchMetadata = z.infer<typeof switchMetadataSchema>;
+export type AccessPointMetadata = z.infer<typeof accessPointMetadataSchema>;
+export type NasMetadata = z.infer<typeof nasMetadataSchema>;
+export type ContainerMetadata = z.infer<typeof containerMetadataSchema>;
+export type ServerMetadata = z.infer<typeof serverMetadataSchema>;
+
+export type DeviceMetadata = RouterMetadata | SwitchMetadata | AccessPointMetadata | NasMetadata | ContainerMetadata | ServerMetadata;
+
 export const nodes = pgTable("nodes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -21,6 +68,7 @@ export const nodes = pgTable("nodes", {
   services: jsonb("services").notNull().default('[]').$type<Service[]>(),
   storageTotal: text("storage_total"),
   storageUsed: text("storage_used"),
+  metadata: jsonb("metadata").$type<DeviceMetadata>(),
   position: jsonb("position").default({ x: 0, y: 0 }),
   uptime: text("uptime"),
   lastSeen: timestamp("last_seen").defaultNow(),
@@ -47,6 +95,14 @@ export const baseInsertNodeSchema = createInsertSchema(nodes).omit({
   deviceType: z.enum(['server', 'router', 'switch', 'access-point', 'nas', 'container']).default('server'),
   storageTotal: z.string().optional(),
   storageUsed: z.string().optional(),
+  metadata: z.union([
+    routerMetadataSchema,
+    switchMetadataSchema,
+    accessPointMetadataSchema,
+    nasMetadataSchema,
+    containerMetadataSchema,
+    serverMetadataSchema,
+  ]).optional(),
 });
 
 // Validated schema with storage validation
