@@ -4,80 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import { useState } from "react";
-
-// TODO: Remove mock data
-const mockNodes = [
-  {
-    id: '1',
-    name: 'Proxmox Server',
-    ip: '192.168.1.10',
-    osType: 'Proxmox VE',
-    status: 'online' as const,
-    tags: ['virtual', 'hypervisor'],
-    serviceUrl: 'https://proxmox.local',
-    uptime: '99.8%',
-    lastSeen: '2 min ago'
-  },
-  {
-    id: '2',
-    name: 'TrueNAS Storage',
-    ip: '192.168.1.20',
-    osType: 'TrueNAS Core',
-    status: 'online' as const,
-    tags: ['storage', 'NAS'],
-    uptime: '99.9%',
-    lastSeen: '1 min ago'
-  },
-  {
-    id: '3',
-    name: 'Docker Host',
-    ip: '192.168.1.30',
-    osType: 'Ubuntu Server',
-    status: 'offline' as const,
-    tags: ['container', 'docker'],
-    uptime: '95.2%',
-    lastSeen: '1 hour ago'
-  },
-  {
-    id: '4',
-    name: 'Unraid Server',
-    ip: '192.168.1.40',
-    osType: 'Unraid',
-    status: 'online' as const,
-    tags: ['storage', 'media'],
-    serviceUrl: 'https://unraid.local',
-    uptime: '99.5%',
-    lastSeen: '5 min ago'
-  },
-  {
-    id: '5',
-    name: 'Pi-hole DNS',
-    ip: '192.168.1.50',
-    osType: 'Raspberry Pi OS',
-    status: 'online' as const,
-    tags: ['dns', 'network'],
-    serviceUrl: 'https://pihole.local',
-    uptime: '100%',
-    lastSeen: '1 min ago'
-  },
-  {
-    id: '6',
-    name: 'Home Assistant',
-    ip: '192.168.1.60',
-    osType: 'Home Assistant OS',
-    status: 'online' as const,
-    tags: ['automation', 'smart-home'],
-    serviceUrl: 'https://homeassistant.local',
-    uptime: '99.7%',
-    lastSeen: '3 min ago'
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import type { Node } from "@shared/schema";
 
 export default function NodesPage() {
-  const [selectedNode, setSelectedNode] = useState<typeof mockNodes[0] | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredNodes = mockNodes.filter(node => 
+  const { data: nodes = [], isLoading } = useQuery<Node[]>({
+    queryKey: ['/api/nodes'],
+  });
+
+  const filteredNodes = nodes.filter(node => 
     node.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     node.ip.includes(searchQuery) ||
     node.osType.toLowerCase().includes(searchQuery.toLowerCase())
@@ -107,26 +45,50 @@ export default function NodesPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredNodes.map((node) => (
-          <NodeCard
-            key={node.id}
-            {...node}
-            onClick={() => setSelectedNode(node)}
-          />
-        ))}
-      </div>
-
-      {filteredNodes.length === 0 && (
+      {isLoading ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No nodes found matching your search</p>
+          <p className="text-muted-foreground">Loading nodes...</p>
         </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredNodes.map((node) => (
+              <NodeCard
+                key={node.id}
+                id={node.id}
+                name={node.name}
+                ip={node.ip}
+                osType={node.osType}
+                status={node.status as "online" | "offline" | "degraded" | "unknown"}
+                tags={node.tags}
+                serviceUrl={node.serviceUrl || undefined}
+                onClick={() => setSelectedNode(node)}
+              />
+            ))}
+          </div>
+
+          {filteredNodes.length === 0 && !isLoading && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No nodes found matching your search</p>
+            </div>
+          )}
+        </>
       )}
 
       <NodeDetailPanel
         isOpen={!!selectedNode}
         onClose={() => setSelectedNode(null)}
-        node={selectedNode || undefined}
+        node={selectedNode ? {
+          id: selectedNode.id,
+          name: selectedNode.name,
+          ip: selectedNode.ip,
+          osType: selectedNode.osType,
+          status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
+          tags: selectedNode.tags,
+          serviceUrl: selectedNode.serviceUrl || undefined,
+          uptime: selectedNode.uptime || undefined,
+          lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
+        } : undefined}
       />
     </div>
   );

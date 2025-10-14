@@ -1,52 +1,72 @@
 import { NetworkCanvas } from "@/components/network-canvas";
 import { NodeDetailPanel } from "@/components/node-detail-panel";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Download, Upload } from "lucide-react";
-import type { Node } from "reactflow";
-
-// TODO: Remove mock data
-const mockNodeData = {
-  '1': {
-    id: '1',
-    name: 'Proxmox Server',
-    ip: '192.168.1.10',
-    osType: 'Proxmox VE',
-    status: 'online' as const,
-    tags: ['virtual', 'hypervisor'],
-    serviceUrl: 'https://proxmox.local',
-    uptime: '99.8%',
-    lastSeen: '2 min ago'
-  },
-  '2': {
-    id: '2',
-    name: 'TrueNAS',
-    ip: '192.168.1.20',
-    osType: 'TrueNAS Core',
-    status: 'online' as const,
-    tags: ['storage', 'NAS'],
-    uptime: '99.9%',
-    lastSeen: '1 min ago'
-  },
-  '3': {
-    id: '3',
-    name: 'Docker Host',
-    ip: '192.168.1.30',
-    osType: 'Ubuntu Server',
-    status: 'online' as const,
-    tags: ['container', 'docker'],
-    uptime: '98.5%',
-    lastSeen: '5 min ago'
-  },
-};
+import type { Node as FlowNode, Edge as FlowEdge } from "reactflow";
+import { useQuery } from "@tanstack/react-query";
+import type { Node, Edge } from "@shared/schema";
 
 export default function NetworkPage() {
-  const [selectedNode, setSelectedNode] = useState<typeof mockNodeData[keyof typeof mockNodeData] | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
-  const handleNodeClick = (node: Node) => {
-    const nodeData = mockNodeData[node.id as keyof typeof mockNodeData];
-    if (nodeData) {
-      setSelectedNode(nodeData);
+  const { data: topology, isLoading } = useQuery<{ nodes: Node[], edges: Edge[] }>({
+    queryKey: ['/api/topology'],
+  });
+
+  // Convert database nodes to React Flow nodes
+  const flowNodes = useMemo(() => {
+    if (!topology?.nodes) return [];
+    return topology.nodes.map(node => ({
+      id: node.id,
+      type: 'default',
+      position: typeof node.position === 'object' && node.position !== null 
+        ? (node.position as { x: number, y: number }) 
+        : { x: Math.random() * 500, y: Math.random() * 300 },
+      data: { label: node.name },
+      style: {
+        background: 'hsl(var(--card))',
+        border: `2px solid ${node.status === 'online' ? 'hsl(var(--primary))' : 'hsl(var(--card-border))'}`,
+        borderRadius: '8px',
+        padding: '12px',
+        color: 'hsl(var(--card-foreground))',
+      },
+    } as FlowNode));
+  }, [topology?.nodes]);
+
+  // Convert database edges to React Flow edges
+  const flowEdges = useMemo(() => {
+    if (!topology?.edges) return [];
+    return topology.edges.map(edge => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      animated: edge.animated === 'true',
+      style: { stroke: 'hsl(var(--primary))' },
+    } as FlowEdge));
+  }, [topology?.edges]);
+
+  const handleNodeClick = (node: FlowNode) => {
+    const dbNode = topology?.nodes.find(n => n.id === node.id);
+    if (dbNode) {
+      setSelectedNode(dbNode);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await fetch('/api/export');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'topology.json';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export failed:', error);
     }
   };
 
@@ -62,7 +82,7 @@ export default function NetworkPage() {
             <Upload className="h-4 w-4 mr-2" />
             Import
           </Button>
-          <Button variant="outline" size="sm" data-testid="button-export">
+          <Button variant="outline" size="sm" data-testid="button-export" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -74,13 +94,33 @@ export default function NetworkPage() {
       </div>
       
       <div className="flex-1">
-        <NetworkCanvas onNodeClick={handleNodeClick} />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-muted-foreground">Loading topology...</p>
+          </div>
+        ) : (
+          <NetworkCanvas 
+            initialNodes={flowNodes} 
+            initialEdges={flowEdges}
+            onNodeClick={handleNodeClick} 
+          />
+        )}
       </div>
 
       <NodeDetailPanel
         isOpen={!!selectedNode}
         onClose={() => setSelectedNode(null)}
-        node={selectedNode || undefined}
+        node={selectedNode ? {
+          id: selectedNode.id,
+          name: selectedNode.name,
+          ip: selectedNode.ip,
+          osType: selectedNode.osType,
+          status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
+          tags: selectedNode.tags,
+          serviceUrl: selectedNode.serviceUrl || undefined,
+          uptime: selectedNode.uptime || undefined,
+          lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
+        } : undefined}
       />
     </div>
   );

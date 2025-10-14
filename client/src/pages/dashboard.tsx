@@ -5,44 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { NodeDetailPanel } from "@/components/node-detail-panel";
-
-// TODO: Remove mock data
-const mockNodes = [
-  {
-    id: '1',
-    name: 'Proxmox Server',
-    ip: '192.168.1.10',
-    osType: 'Proxmox VE',
-    status: 'online' as const,
-    tags: ['virtual', 'hypervisor'],
-    serviceUrl: 'https://proxmox.local',
-    uptime: '99.8%',
-    lastSeen: '2 min ago'
-  },
-  {
-    id: '2',
-    name: 'TrueNAS Storage',
-    ip: '192.168.1.20',
-    osType: 'TrueNAS Core',
-    status: 'online' as const,
-    tags: ['storage', 'NAS'],
-    uptime: '99.9%',
-    lastSeen: '1 min ago'
-  },
-  {
-    id: '3',
-    name: 'Docker Host',
-    ip: '192.168.1.30',
-    osType: 'Ubuntu Server',
-    status: 'offline' as const,
-    tags: ['container', 'docker'],
-    uptime: '95.2%',
-    lastSeen: '1 hour ago'
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import type { Node } from "@shared/schema";
 
 export default function Dashboard() {
-  const [selectedNode, setSelectedNode] = useState<typeof mockNodes[0] | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
+  const { data: nodes = [], isLoading } = useQuery<Node[]>({
+    queryKey: ['/api/nodes'],
+  });
+
+  // Calculate stats from real data
+  const onlineNodes = nodes.filter(n => n.status === 'online').length;
+  const totalNodes = nodes.length;
+  const recentNodes = nodes.slice(0, 3);
 
   return (
     <div className="p-6 space-y-6">
@@ -54,20 +30,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
           title="Total Nodes" 
-          value={12} 
+          value={totalNodes} 
           icon={Server}
-          trend={{ value: "2 new", positive: true }}
         />
         <StatCard 
-          title="Uptime" 
-          value="99.8%" 
+          title="Online" 
+          value={`${onlineNodes}/${totalNodes}`} 
           icon={Activity}
+          trend={onlineNodes === totalNodes ? { value: "All up", positive: true } : undefined}
         />
         <StatCard 
           title="Services" 
-          value={24} 
+          value={nodes.filter(n => n.serviceUrl).length} 
           icon={Network}
-          trend={{ value: "1 down", positive: false }}
         />
         <StatCard 
           title="Storage" 
@@ -153,21 +128,43 @@ export default function Dashboard() {
             View All
           </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockNodes.map((node) => (
-            <NodeCard
-              key={node.id}
-              {...node}
-              onClick={() => setSelectedNode(node)}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading nodes...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentNodes.map((node) => (
+              <NodeCard
+                key={node.id}
+                id={node.id}
+                name={node.name}
+                ip={node.ip}
+                osType={node.osType}
+                status={node.status as "online" | "offline" | "degraded" | "unknown"}
+                tags={node.tags}
+                serviceUrl={node.serviceUrl || undefined}
+                onClick={() => setSelectedNode(node)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <NodeDetailPanel
         isOpen={!!selectedNode}
         onClose={() => setSelectedNode(null)}
-        node={selectedNode || undefined}
+        node={selectedNode ? {
+          id: selectedNode.id,
+          name: selectedNode.name,
+          ip: selectedNode.ip,
+          osType: selectedNode.osType,
+          status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
+          tags: selectedNode.tags,
+          serviceUrl: selectedNode.serviceUrl || undefined,
+          uptime: selectedNode.uptime || undefined,
+          lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
+        } : undefined}
       />
     </div>
   );
