@@ -68,8 +68,11 @@ Preferred communication style: Simple, everyday language.
 
 **Database Schema**
 - **Nodes table**: Stores infrastructure nodes (servers, containers, devices)
-  - Fields: id, name, ip, osType, status, tags (array), serviceUrl, position (JSON), uptime, lastSeen, timestamps
+  - Fields: id, name, ip, osType, deviceType, status, tags (array), services (JSONB array), storageTotal, storageUsed, position (JSON), uptime, lastSeen, timestamps
   - Position stored as JSONB for flexible coordinate data
+  - deviceType: 'server' | 'router' | 'switch' | 'access-point' | 'nas' | 'container'
+  - services: JSON array of {name, url} objects replacing deprecated serviceUrl field
+  - storageTotal/storageUsed: optional numeric strings for NAS device capacity tracking
   
 - **Edges table**: Stores relationships between nodes
   - Fields: id, source (FK to nodes), target (FK to nodes), animated flag, createdAt
@@ -111,6 +114,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (October 14, 2025)
 
+**Device Type System & NAS Storage Tracking** (Latest)
+- Added device type support for infrastructure categorization: servers, routers, switches, access points, NAS, and containers
+- Implemented device-specific icons in UI (Server, Router, Network, Wifi, HardDrive, Container from Lucide React)
+- Added NAS storage capacity tracking with storageTotal and storageUsed fields
+- Dashboard now aggregates and displays total NAS storage across all devices with percentage usage
+- Node form shows conditional storage fields only when device type is NAS
+- Strict numeric validation for storage values using regex pattern /^\d+(\.\d+)?$/
+- Form validation ensures used storage cannot exceed total storage
+- Storage inputs use type="number" with min="0" and step="0.1" for better UX
+- Defensive NaN handling in dashboard and NodeCard calculations prevents UI breakage
+- Field-level error messages using Zod superRefine for clear user feedback
+- Node cards display storage progress bars for NAS devices with color-coded indicators
+- System Health card shows NAS storage usage with dynamic color gradients (green/yellow/red)
+
 **Backend-Frontend Integration Complete**
 - Connected all frontend pages to PostgreSQL database via API
 - Dashboard now displays real-time stats from database
@@ -129,15 +146,17 @@ Preferred communication style: Simple, everyday language.
 - Modern, theme-aware scrollbar for dialog forms (8px thin, transparent track)
 
 **API Security Enhancements**
-- Added Zod validation to all routes
+- Added Zod validation to all routes including strict numeric validation for NAS storage
 - Whitelisted fields for update operations to prevent unauthorized modifications
 - Validated import data before persistence to prevent injection attacks
+- BaseInsertNodeSchema exported separately for frontend form extensions
 
 **UI/UX Enhancements**
 - Node edit form supports scrolling with modern, subtle scrollbar styling
 - Service names displayed as outline badges in node cards instead of just count
 - Custom `.modern-scrollbar` CSS utility for consistent scrollbar appearance
 - Scrollbar blends with dark theme using theme border colors
+- Device type badges and labels clearly identify infrastructure categories
 
 **Known Limitations**
 - Import operation validates upfront but lacks transactional rollback (acceptable for MVP)
@@ -148,3 +167,4 @@ Preferred communication style: Simple, everyday language.
 - Agent-based monitoring for real-time metrics
 - Transactional import with rollback support
 - Git sync for versioned backups
+- Additional device types based on user needs
