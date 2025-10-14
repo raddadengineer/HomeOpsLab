@@ -68,6 +68,7 @@ export default function NodesPage() {
                 services={node.services}
                 storageTotal={node.storageTotal || undefined}
                 storageUsed={node.storageUsed || undefined}
+                metadata={node.metadata}
                 onClick={() => setSelectedNode(node)}
                 onEdit={() => setEditingNode(node)}
               />
@@ -102,6 +103,7 @@ export default function NodesPage() {
           services: selectedNode.services,
           storageTotal: selectedNode.storageTotal || undefined,
           storageUsed: selectedNode.storageUsed || undefined,
+          metadata: selectedNode.metadata,
           uptime: selectedNode.uptime || undefined,
           lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
         } : undefined}
@@ -126,6 +128,7 @@ export default function NodesPage() {
           services: editingNode.services,
           storageTotal: editingNode.storageTotal || undefined,
           storageUsed: editingNode.storageUsed || undefined,
+          metadata: editingNode.metadata,
         } : undefined}
       />
     </div>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "./status-badge";
 import { ExternalLink, MoreVertical, Server, Router, Network, Wifi, HardDrive, Box } from "lucide-react";
-import type { Service } from "@shared/schema";
+import type { Service, DeviceMetadata } from "@shared/schema";
 
 interface NodeCardProps {
   id: string;
@@ -16,6 +16,7 @@ interface NodeCardProps {
   services?: Service[];
   storageTotal?: string;
   storageUsed?: string;
+  metadata?: DeviceMetadata;
   onClick?: () => void;
   onEdit?: () => void;
 }
@@ -53,6 +54,7 @@ export function NodeCard({
   services = [],
   storageTotal,
   storageUsed,
+  metadata,
   onClick,
   onEdit
 }: NodeCardProps) {
@@ -127,6 +129,92 @@ export function NodeCard({
                 {tag}
               </Badge>
             ))}
+          </div>
+        )}
+        
+        {/* Device-specific metadata display */}
+        {metadata && (
+          <div className="mt-2 space-y-1">
+            {deviceType === 'router' && 'wanIp' in metadata && (
+              <>
+                {metadata.wanIp && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">WAN IP:</span>
+                    <span className="font-mono">{metadata.wanIp}</span>
+                  </div>
+                )}
+                {metadata.gateway && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">Gateway:</span>
+                    <span className="font-mono">{metadata.gateway}</span>
+                  </div>
+                )}
+              </>
+            )}
+            {deviceType === 'switch' && 'portCount' in metadata && (
+              <>
+                {metadata.portCount && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">Ports:</span>
+                    <span>{metadata.portCount} {'managementType' in metadata && metadata.managementType ? `(${metadata.managementType})` : ''}</span>
+                  </div>
+                )}
+              </>
+            )}
+            {deviceType === 'access-point' && 'wifiStandard' in metadata && (
+              <>
+                {metadata.wifiStandard && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">WiFi:</span>
+                    <span>{metadata.wifiStandard}</span>
+                  </div>
+                )}
+                {metadata.ssid && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">SSID:</span>
+                    <span className="font-mono">{metadata.ssid}</span>
+                  </div>
+                )}
+              </>
+            )}
+            {deviceType === 'nas' && 'raidType' in metadata && metadata.raidType && (
+              <div className="text-xs flex justify-between">
+                <span className="text-muted-foreground">RAID:</span>
+                <span>{metadata.raidType}</span>
+              </div>
+            )}
+            {deviceType === 'container' && 'runtime' in metadata && (
+              <>
+                {metadata.runtime && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">Runtime:</span>
+                    <span>{metadata.runtime}</span>
+                  </div>
+                )}
+                {metadata.image && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">Image:</span>
+                    <span className="font-mono text-xs truncate max-w-[180px]">{metadata.image}</span>
+                  </div>
+                )}
+              </>
+            )}
+            {deviceType === 'server' && 'cpu' in metadata && (
+              <>
+                {metadata.cpu && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">CPU:</span>
+                    <span className="truncate max-w-[180px]">{metadata.cpu}</span>
+                  </div>
+                )}
+                {metadata.ram && (
+                  <div className="text-xs flex justify-between">
+                    <span className="text-muted-foreground">RAM:</span>
+                    <span>{metadata.ram}</span>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </CardContent>

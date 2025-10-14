@@ -7,7 +7,7 @@ import { StatusBadge } from "./status-badge";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Service } from "@shared/schema";
+import type { Service, DeviceMetadata } from "@shared/schema";
 
 interface NodeDetailPanelProps {
   isOpen: boolean;
@@ -24,6 +24,7 @@ interface NodeDetailPanelProps {
     services?: Service[];
     storageTotal?: string;
     storageUsed?: string;
+    metadata?: DeviceMetadata;
     uptime?: string;
     lastSeen?: string;
   };
@@ -127,6 +128,159 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
                 </div>
               </dl>
             </div>
+
+            {/* Device-specific metadata */}
+            {node.metadata && (
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Device Information</h3>
+                <dl className="space-y-2 text-sm">
+                  {node.deviceType === 'router' && 'wanIp' in node.metadata && (
+                    <>
+                      {node.metadata.wanIp && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">WAN IP</dt>
+                          <dd className="font-mono">{node.metadata.wanIp}</dd>
+                        </div>
+                      )}
+                      {node.metadata.gateway && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Gateway</dt>
+                          <dd className="font-mono">{node.metadata.gateway}</dd>
+                        </div>
+                      )}
+                      {node.metadata.dhcpRange && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">DHCP Range</dt>
+                          <dd className="font-mono text-xs">{node.metadata.dhcpRange}</dd>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {node.deviceType === 'switch' && 'portCount' in node.metadata && (
+                    <>
+                      {node.metadata.portCount && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Port Count</dt>
+                          <dd>{node.metadata.portCount}</dd>
+                        </div>
+                      )}
+                      {node.metadata.portSpeed && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Port Speed</dt>
+                          <dd>{node.metadata.portSpeed}</dd>
+                        </div>
+                      )}
+                      {node.metadata.managementType && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Management</dt>
+                          <dd className="capitalize">{node.metadata.managementType}</dd>
+                        </div>
+                      )}
+                      {node.metadata.vlanSupport !== undefined && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">VLAN Support</dt>
+                          <dd>{node.metadata.vlanSupport ? 'Yes' : 'No'}</dd>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {node.deviceType === 'access-point' && 'wifiStandard' in node.metadata && (
+                    <>
+                      {node.metadata.wifiStandard && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">WiFi Standard</dt>
+                          <dd>{node.metadata.wifiStandard}</dd>
+                        </div>
+                      )}
+                      {node.metadata.ssid && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">SSID</dt>
+                          <dd className="font-mono">{node.metadata.ssid}</dd>
+                        </div>
+                      )}
+                      {node.metadata.channel && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Channel</dt>
+                          <dd>{node.metadata.channel}</dd>
+                        </div>
+                      )}
+                      {node.metadata.security && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Security</dt>
+                          <dd>{node.metadata.security}</dd>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {node.deviceType === 'nas' && 'raidType' in node.metadata && (
+                    <>
+                      {node.storageTotal && node.storageUsed && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Storage</dt>
+                          <dd className="font-mono">{node.storageUsed}/{node.storageTotal} GB</dd>
+                        </div>
+                      )}
+                      {node.metadata.raidType && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">RAID Type</dt>
+                          <dd>{node.metadata.raidType}</dd>
+                        </div>
+                      )}
+                      {node.metadata.protocols && node.metadata.protocols.length > 0 && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Protocols</dt>
+                          <dd>{node.metadata.protocols.join(', ')}</dd>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {node.deviceType === 'container' && 'runtime' in node.metadata && (
+                    <>
+                      {node.metadata.runtime && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Runtime</dt>
+                          <dd className="capitalize">{node.metadata.runtime}</dd>
+                        </div>
+                      )}
+                      {node.metadata.image && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Image</dt>
+                          <dd className="font-mono text-xs">{node.metadata.image}</dd>
+                        </div>
+                      )}
+                      {node.metadata.ports && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Ports</dt>
+                          <dd className="font-mono text-xs">{node.metadata.ports}</dd>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {node.deviceType === 'server' && 'cpu' in node.metadata && (
+                    <>
+                      {node.metadata.cpu && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">CPU</dt>
+                          <dd className="text-xs">{node.metadata.cpu}</dd>
+                        </div>
+                      )}
+                      {node.metadata.ram && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">RAM</dt>
+                          <dd>{node.metadata.ram}</dd>
+                        </div>
+                      )}
+                      {node.metadata.platform && (
+                        <div className="flex justify-between">
+                          <dt className="text-muted-foreground">Platform</dt>
+                          <dd>{node.metadata.platform}</dd>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </dl>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="services" className="space-y-4 mt-4">
