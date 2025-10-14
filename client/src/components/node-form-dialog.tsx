@@ -135,7 +135,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col" data-testid="dialog-node-form">
+      <DialogContent className="sm:max-w-[500px]" data-testid="dialog-node-form">
         <DialogHeader>
           <DialogTitle data-testid="text-dialog-title">
             {isEdit ? "Edit Node" : "Add Node"}
@@ -145,7 +145,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto flex-1">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
