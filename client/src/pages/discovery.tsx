@@ -57,8 +57,8 @@ export default function DiscoveryPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Network Discovery</h1>
-          <p className="text-muted-foreground">Automatically detect devices on your network</p>
+          <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">Network Discovery</h1>
+          <p className="text-lg text-muted-foreground mt-2">Automatically detect devices on your network</p>
         </div>
         <Button 
           onClick={handleScan} 

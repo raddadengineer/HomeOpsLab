@@ -52,10 +52,10 @@ export default function NetworkPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-border flex items-center justify-between gap-4">
+      <div className="p-6 border-b border-border flex items-center justify-between gap-4 bg-gradient-to-r from-background to-card/50">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Network Map</h1>
-          <p className="text-sm text-muted-foreground">Interactive topology view</p>
+          <h1 className="text-3xl font-bold tracking-tight" data-testid="text-page-title">Network Map</h1>
+          <p className="text-base text-muted-foreground mt-1">Interactive topology view</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" data-testid="button-import">

@@ -9,8 +9,8 @@ export default function SettingsPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold" data-testid="text-page-title">Settings</h1>
-        <p className="text-muted-foreground">Configure your HomeOps Lab instance</p>
+        <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">Settings</h1>
+        <p className="text-lg text-muted-foreground mt-2">Configure your HomeOps Lab instance</p>
       </div>
 
       <Card>

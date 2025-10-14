@@ -46,9 +46,9 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="text-page-title">Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your home lab infrastructure</p>
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-2" data-testid="text-page-title">Dashboard</h1>
+        <p className="text-lg text-muted-foreground">Overview of your home lab infrastructure</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -77,68 +77,68 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="hover-elevate transition-all duration-200">
           <CardHeader>
-            <CardTitle>System Health</CardTitle>
+            <CardTitle className="text-xl">System Health</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Network Uptime</span>
-                  <span className="font-semibold">99.8%</span>
+                  <span className="font-semibold text-base">99.8%</span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-full bg-green-500" />
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full w-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-300" />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Services Active</span>
-                  <span className="font-semibold">23/24</span>
+                  <span className="font-semibold text-base">23/24</span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-11/12 bg-green-500" />
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full w-11/12 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-300" />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Storage Usage</span>
-                  <span className="font-semibold">8.2/12.4 TB</span>
+                  <span className="font-semibold text-base">8.2/12.4 TB</span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-2/3 bg-yellow-500" />
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full w-2/3 bg-gradient-to-r from-yellow-500 to-amber-400 transition-all duration-300" />
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-elevate transition-all duration-200">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle className="text-xl">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
-                <div className="flex-1">
-                  <p className="text-sm">Proxmox Server came online</p>
-                  <p className="text-xs text-muted-foreground">2 minutes ago</p>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-2 rounded-lg hover-elevate transition-all duration-200">
+                <div className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0 animate-pulse" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Proxmox Server came online</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">2 minutes ago</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-red-500 mt-1.5" />
-                <div className="flex-1">
-                  <p className="text-sm">Docker Host went offline</p>
-                  <p className="text-xs text-muted-foreground">1 hour ago</p>
+              <div className="flex items-start gap-3 p-2 rounded-lg hover-elevate transition-all duration-200">
+                <div className="w-2 h-2 rounded-full bg-red-500 mt-2 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Docker Host went offline</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">1 hour ago</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
-                <div className="flex-1">
-                  <p className="text-sm">Network scan completed</p>
-                  <p className="text-xs text-muted-foreground">3 hours ago</p>
+              <div className="flex items-start gap-3 p-2 rounded-lg hover-elevate transition-all duration-200">
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Network scan completed</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">3 hours ago</p>
                 </div>
               </div>
             </div>

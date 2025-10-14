@@ -40,7 +40,7 @@ function App() {
           <div className="flex h-screen w-full">
             <AppSidebar />
             <div className="flex flex-col flex-1">
-              <header className="flex items-center justify-between p-4 border-b border-border h-16">
+              <header className="flex items-center justify-between px-6 py-4 border-b border-border h-16 bg-card/30 backdrop-blur-sm">
                 <div className="flex items-center gap-4 flex-1">
                   <SidebarTrigger data-testid="button-sidebar-toggle" />
                   <GlobalSearch />

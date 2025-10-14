@@ -11,18 +11,22 @@ const statusConfig = {
   online: {
     label: "Online",
     className: "bg-green-500/20 text-green-400 border-green-500/50",
+    dotClass: "animate-pulse",
   },
   offline: {
     label: "Offline",
     className: "bg-red-500/20 text-red-400 border-red-500/50",
+    dotClass: "",
   },
   degraded: {
     label: "Degraded",
     className: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50",
+    dotClass: "animate-pulse",
   },
   unknown: {
     label: "Unknown",
     className: "bg-gray-500/20 text-gray-400 border-gray-500/50",
+    dotClass: "",
   },
 };
 
@@ -32,10 +36,10 @@ export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
   return (
     <Badge 
       variant="outline" 
-      className={`${config.className} ${className}`}
+      className={`${config.className} ${className} font-medium`}
       data-testid={`badge-status-${status}`}
     >
-      <div className="w-1.5 h-1.5 rounded-full bg-current mr-1.5" />
+      <div className={`w-1.5 h-1.5 rounded-full bg-current mr-1.5 ${config.dotClass}`} />
       {config.label}
     </Badge>
   );

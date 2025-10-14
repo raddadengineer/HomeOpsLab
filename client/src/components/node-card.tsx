@@ -27,19 +27,19 @@ export function NodeCard({
 }: NodeCardProps) {
   return (
     <Card 
-      className="hover-elevate cursor-pointer" 
+      className="hover-elevate cursor-pointer transition-all duration-200 group" 
       onClick={onClick}
       data-testid={`card-node-${id}`}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <ServerIcon className="h-5 w-5 text-primary" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0 group-hover:from-primary/30 group-hover:to-primary/20 transition-all duration-200">
+              <ServerIcon className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold truncate" data-testid={`text-node-name-${id}`}>{name}</h3>
-              <p className="text-xs text-muted-foreground font-mono">{ip}</p>
+              <h3 className="font-semibold text-base truncate" data-testid={`text-node-name-${id}`}>{name}</h3>
+              <p className="text-sm text-muted-foreground font-mono mt-0.5">{ip}</p>
             </div>
           </div>
           <Button 
