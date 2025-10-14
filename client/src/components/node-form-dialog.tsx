@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertNodeSchema, type InsertNode, type Service } from "@shared/schema";
+import { baseInsertNodeSchema, type InsertNode, type Service } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -13,8 +13,64 @@ import { z } from "zod";
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 
-const formSchema = insertNodeSchema.extend({
+const formSchema = baseInsertNodeSchema.extend({
   tags: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // Strict numeric validation regex - only accepts numbers with optional decimal
+  const numericRegex = /^\d+(\.\d+)?$/;
+  
+  // If device is NAS and storage fields are provided, they must be strictly numeric and non-negative
+  if (data.deviceType === 'nas') {
+    if (data.storageTotal !== undefined && data.storageTotal !== '') {
+      if (!numericRegex.test(data.storageTotal)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['storageTotal'],
+          message: "Total storage must be a valid number",
+        });
+      } else {
+        const num = Number(data.storageTotal);
+        if (num < 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['storageTotal'],
+            message: "Total storage must be non-negative",
+          });
+        }
+      }
+    }
+    if (data.storageUsed !== undefined && data.storageUsed !== '') {
+      if (!numericRegex.test(data.storageUsed)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['storageUsed'],
+          message: "Used storage must be a valid number",
+        });
+      } else {
+        const num = Number(data.storageUsed);
+        if (num < 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['storageUsed'],
+            message: "Used storage must be non-negative",
+          });
+        }
+      }
+    }
+    // Ensure used storage doesn't exceed total storage
+    if (data.storageTotal && data.storageUsed && 
+        numericRegex.test(data.storageTotal) && numericRegex.test(data.storageUsed)) {
+      const total = Number(data.storageTotal);
+      const used = Number(data.storageUsed);
+      if (used > total) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['storageUsed'],
+          message: "Used storage cannot exceed total storage",
+        });
+      }
+    }
+  }
 });
 
 type FormValues = z.infer<typeof formSchema>;

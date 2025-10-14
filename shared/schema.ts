@@ -36,7 +36,8 @@ export const edges = pgTable("edges", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertNodeSchema = createInsertSchema(nodes).omit({
+// Base schema without validation - can be extended
+export const baseInsertNodeSchema = createInsertSchema(nodes).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -46,7 +47,10 @@ export const insertNodeSchema = createInsertSchema(nodes).omit({
   deviceType: z.enum(['server', 'router', 'switch', 'access-point', 'nas', 'container']).default('server'),
   storageTotal: z.string().optional(),
   storageUsed: z.string().optional(),
-}).superRefine((data, ctx) => {
+});
+
+// Validated schema with storage validation
+export const insertNodeSchema = baseInsertNodeSchema.superRefine((data, ctx) => {
   // Strict numeric validation regex - only accepts numbers with optional decimal
   const numericRegex = /^\d+(\.\d+)?$/;
   
