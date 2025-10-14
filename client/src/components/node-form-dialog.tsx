@@ -2,10 +2,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { baseInsertNodeSchema, type InsertNode, type Service } from "@shared/schema";
+import { baseInsertNodeSchema, type InsertNode, type Service, type DeviceMetadata } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -89,6 +90,7 @@ interface NodeFormDialogProps {
     services?: Service[];
     storageTotal?: string;
     storageUsed?: string;
+    metadata?: DeviceMetadata;
   };
 }
 
@@ -108,6 +110,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
       services: node?.services || [],
       storageTotal: node?.storageTotal || "",
       storageUsed: node?.storageUsed || "",
+      metadata: node?.metadata || undefined,
     },
   });
 
@@ -128,6 +131,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
         services: node?.services || [],
         storageTotal: node?.storageTotal || "",
         storageUsed: node?.storageUsed || "",
+        metadata: node?.metadata || undefined,
       });
     }
   }, [open, node, form]);
@@ -192,6 +196,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
       services: values.services || [],
       storageTotal: values.storageTotal,
       storageUsed: values.storageUsed,
+      metadata: values.metadata,
     };
 
     if (isEdit) {
@@ -278,6 +283,285 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
                 </FormItem>
               )}
             />
+
+            {/* Router-specific fields */}
+            {form.watch("deviceType") === "router" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="metadata.wanIp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>WAN IP Address</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 203.0.113.1" {...field} data-testid="input-wan-ip" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.gateway"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gateway</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 192.168.1.1" {...field} data-testid="input-gateway" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.dhcpRange"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>DHCP Range</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 192.168.1.100 - 192.168.1.200" {...field} data-testid="input-dhcp-range" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {/* Switch-specific fields */}
+            {form.watch("deviceType") === "switch" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="metadata.portCount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Port Count</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 24" {...field} data-testid="input-port-count" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.portSpeed"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Port Speed</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 1 Gbps, 10 Gbps" {...field} data-testid="input-port-speed" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.managementType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Management Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-management-type">
+                            <SelectValue placeholder="Select management type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="managed">Managed</SelectItem>
+                          <SelectItem value="unmanaged">Unmanaged</SelectItem>
+                          <SelectItem value="smart">Smart/Web Managed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.vlanSupport"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          data-testid="checkbox-vlan-support"
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>VLAN Support</FormLabel>
+                        <FormDescription>
+                          Does this switch support VLANs?
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {/* Access Point-specific fields */}
+            {form.watch("deviceType") === "access-point" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="metadata.wifiStandard"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>WiFi Standard</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 802.11ax (WiFi 6)" {...field} data-testid="input-wifi-standard" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.ssid"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>SSID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. HomeNetwork-5G" {...field} data-testid="input-ssid" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.channel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Channel</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 36, 40, 44" {...field} data-testid="input-channel" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.security"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Security Type</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. WPA3-Personal" {...field} data-testid="input-security" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {/* Container-specific fields */}
+            {form.watch("deviceType") === "container" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="metadata.runtime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Container Runtime</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-runtime">
+                            <SelectValue placeholder="Select runtime" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="docker">Docker</SelectItem>
+                          <SelectItem value="podman">Podman</SelectItem>
+                          <SelectItem value="containerd">containerd</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. nginx:latest" {...field} data-testid="input-image" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.ports"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Exposed Ports</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 80:8080, 443:8443" {...field} data-testid="input-ports" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {/* Server-specific fields */}
+            {form.watch("deviceType") === "server" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="metadata.cpu"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CPU</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Intel Xeon E5-2680 v4" {...field} data-testid="input-cpu" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.ram"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>RAM</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 64 GB DDR4" {...field} data-testid="input-ram" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.platform"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Virtualization Platform</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Proxmox VE, ESXi, KVM" {...field} data-testid="input-platform" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {/* NAS-specific fields */}
             {form.watch("deviceType") === "nas" && (
               <>
                 <FormField
@@ -302,6 +586,35 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
                       <FormControl>
                         <Input type="number" min="0" step="0.1" placeholder="e.g. 450" {...field} data-testid="input-storage-used" />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.raidType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>RAID Type</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. RAID 5, RAID 10, SHR" {...field} data-testid="input-raid-type" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="metadata.protocols"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Supported Protocols</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. SMB, NFS, iSCSI" {...field} value={field.value?.join(', ') || ''} onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()).filter(Boolean))} data-testid="input-protocols" />
+                      </FormControl>
+                      <FormDescription>
+                        Comma-separated list of protocols
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
