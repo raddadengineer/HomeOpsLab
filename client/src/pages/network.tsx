@@ -1,5 +1,6 @@
 import { NetworkCanvas } from "@/components/network-canvas";
 import { NodeDetailPanel } from "@/components/node-detail-panel";
+import { NodeFormDialog } from "@/components/node-form-dialog";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Download, Upload } from "lucide-react";
@@ -9,6 +10,7 @@ import type { Node, Edge } from "@shared/schema";
 
 export default function NetworkPage() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [editingNode, setEditingNode] = useState<Node | null>(null);
 
   const { data: topology, isLoading } = useQuery<{ nodes: Node[], edges: Edge[] }>({
     queryKey: ['/api/topology'],
@@ -110,6 +112,12 @@ export default function NetworkPage() {
       <NodeDetailPanel
         isOpen={!!selectedNode}
         onClose={() => setSelectedNode(null)}
+        onEdit={() => {
+          if (selectedNode) {
+            setEditingNode(selectedNode);
+            setSelectedNode(null);
+          }
+        }}
         node={selectedNode ? {
           id: selectedNode.id,
           name: selectedNode.name,
@@ -120,6 +128,20 @@ export default function NetworkPage() {
           serviceUrl: selectedNode.serviceUrl || undefined,
           uptime: selectedNode.uptime || undefined,
           lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
+        } : undefined}
+      />
+
+      <NodeFormDialog
+        open={!!editingNode}
+        onOpenChange={(open) => !open && setEditingNode(null)}
+        node={editingNode ? {
+          id: editingNode.id,
+          name: editingNode.name,
+          ip: editingNode.ip,
+          osType: editingNode.osType,
+          status: editingNode.status,
+          tags: editingNode.tags,
+          serviceUrl: editingNode.serviceUrl || undefined,
         } : undefined}
       />
     </div>

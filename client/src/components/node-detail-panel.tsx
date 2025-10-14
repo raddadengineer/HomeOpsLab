@@ -4,10 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "./status-badge";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface NodeDetailPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: () => void;
   node?: {
     id: string;
     name: string;
@@ -21,7 +25,37 @@ interface NodeDetailPanelProps {
   };
 }
 
-export function NodeDetailPanel({ isOpen, onClose, node }: NodeDetailPanelProps) {
+export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPanelProps) {
+  const { toast } = useToast();
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/nodes/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/nodes'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/topology'] });
+      toast({
+        title: "Success",
+        description: "Node deleted successfully",
+      });
+      onClose();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete node",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = () => {
+    if (node && confirm(`Are you sure you want to delete "${node.name}"?`)) {
+      deleteMutation.mutate(node.id);
+    }
+  };
+
   if (!isOpen || !node) return null;
 
   return (
@@ -140,11 +174,22 @@ export function NodeDetailPanel({ isOpen, onClose, node }: NodeDetailPanelProps)
         <Separator className="my-6" />
 
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1" data-testid="button-edit-node">
+          <Button 
+            variant="outline" 
+            className="flex-1" 
+            onClick={onEdit}
+            data-testid="button-edit-node"
+          >
             Edit
           </Button>
-          <Button variant="destructive" className="flex-1" data-testid="button-delete-node">
-            Delete
+          <Button 
+            variant="destructive" 
+            className="flex-1" 
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+            data-testid="button-delete-node"
+          >
+            {deleteMutation.isPending ? "Deleting..." : "Delete"}
           </Button>
         </div>
       </div>

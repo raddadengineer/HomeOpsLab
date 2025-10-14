@@ -82,6 +82,12 @@ export default function NodesPage() {
       <NodeDetailPanel
         isOpen={!!selectedNode}
         onClose={() => setSelectedNode(null)}
+        onEdit={() => {
+          if (selectedNode) {
+            setEditingNode(selectedNode);
+            setSelectedNode(null);
+          }
+        }}
         node={selectedNode ? {
           id: selectedNode.id,
           name: selectedNode.name,
