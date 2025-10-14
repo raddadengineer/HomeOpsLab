@@ -135,7 +135,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]" data-testid="dialog-node-form">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto" data-testid="dialog-node-form">
         <DialogHeader>
           <DialogTitle data-testid="text-dialog-title">
             {isEdit ? "Edit Node" : "Add Node"}
