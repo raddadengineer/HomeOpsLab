@@ -1,5 +1,6 @@
 import { NodeCard } from "@/components/node-card";
 import { NodeDetailPanel } from "@/components/node-detail-panel";
+import { NodeFormDialog } from "@/components/node-form-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
@@ -10,6 +11,8 @@ import type { Node } from "@shared/schema";
 export default function NodesPage() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingNode, setEditingNode] = useState<Node | null>(null);
 
   const { data: nodes = [], isLoading } = useQuery<Node[]>({
     queryKey: ['/api/nodes'],
@@ -28,7 +31,7 @@ export default function NodesPage() {
           <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">Nodes</h1>
           <p className="text-lg text-muted-foreground mt-2">Manage all infrastructure nodes</p>
         </div>
-        <Button data-testid="button-add-node">
+        <Button onClick={() => setShowAddDialog(true)} data-testid="button-add-node">
           <Plus className="h-4 w-4 mr-2" />
           Add Node
         </Button>
@@ -63,6 +66,7 @@ export default function NodesPage() {
                 tags={node.tags}
                 serviceUrl={node.serviceUrl || undefined}
                 onClick={() => setSelectedNode(node)}
+                onEdit={() => setEditingNode(node)}
               />
             ))}
           </div>
@@ -88,6 +92,25 @@ export default function NodesPage() {
           serviceUrl: selectedNode.serviceUrl || undefined,
           uptime: selectedNode.uptime || undefined,
           lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
+        } : undefined}
+      />
+
+      <NodeFormDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+      />
+
+      <NodeFormDialog
+        open={!!editingNode}
+        onOpenChange={(open) => !open && setEditingNode(null)}
+        node={editingNode ? {
+          id: editingNode.id,
+          name: editingNode.name,
+          ip: editingNode.ip,
+          osType: editingNode.osType,
+          status: editingNode.status,
+          tags: editingNode.tags,
+          serviceUrl: editingNode.serviceUrl || undefined,
         } : undefined}
       />
     </div>

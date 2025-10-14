@@ -13,6 +13,7 @@ interface NodeCardProps {
   tags?: string[];
   serviceUrl?: string;
   onClick?: () => void;
+  onEdit?: () => void;
 }
 
 export function NodeCard({ 
@@ -23,7 +24,8 @@ export function NodeCard({
   status, 
   tags = [], 
   serviceUrl,
-  onClick 
+  onClick,
+  onEdit
 }: NodeCardProps) {
   return (
     <Card 
@@ -48,9 +50,9 @@ export function NodeCard({
             className="flex-shrink-0"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('Node menu clicked', id);
+              onEdit?.();
             }}
-            data-testid={`button-node-menu-${id}`}
+            data-testid={`button-node-edit-${id}`}
           >
             <MoreVertical className="h-4 w-4" />
           </Button>
