@@ -125,11 +125,19 @@ Preferred communication style: Simple, everyday language.
 - Form validation using React Hook Form with Zod schemas
 - Real-time updates with optimistic UI patterns
 - Toast notifications for success/error feedback
+- Services displayed as badges in node cards for better visibility
+- Modern, theme-aware scrollbar for dialog forms (8px thin, transparent track)
 
 **API Security Enhancements**
 - Added Zod validation to all routes
 - Whitelisted fields for update operations to prevent unauthorized modifications
 - Validated import data before persistence to prevent injection attacks
+
+**UI/UX Enhancements**
+- Node edit form supports scrolling with modern, subtle scrollbar styling
+- Service names displayed as outline badges in node cards instead of just count
+- Custom `.modern-scrollbar` CSS utility for consistent scrollbar appearance
+- Scrollbar blends with dark theme using theme border colors
 
 **Known Limitations**
 - Import operation validates upfront but lacks transactional rollback (acceptable for MVP)
