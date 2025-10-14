@@ -163,6 +163,16 @@ Preferred communication style: Simple, everyday language.
 - Network discovery remains mocked in UI (planned for future release)
 - Metadata validation uses flexible `z.any()` schema for maximum compatibility across device types (trade-off: accepts any JSON structure vs strict per-device validation)
 
+**Self-Hosted Docker Deployment** (October 14, 2025)
+- Complete Docker configuration for self-hosting
+- Multi-stage Dockerfile for optimized production builds
+- Docker Compose setup with PostgreSQL and application services
+- Environment variable configuration via `.env` file
+- Comprehensive deployment documentation in `DOCKER.md`
+- Database persistence with Docker volumes
+- Health checks and automatic container restart policies
+- Production-ready with reverse proxy and backup guidelines
+
 **Planned Features** (future releases)
 - Network discovery via ARP/ICMP/mDNS (UI stubbed)
 - Agent-based monitoring for real-time metrics
