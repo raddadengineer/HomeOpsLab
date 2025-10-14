@@ -1,0 +1,159 @@
+You are building a full-stack, self-hosted web app called **HomeOps Lab**.
+
+**Goal:**  
+Create a modern, user-friendly platform that combines network/service discovery, infrastructure diagramming, and basic monitoring — built specifically for home lab and self-hosting enthusiasts.
+
+---
+
+## 🎯 Overview
+
+HomeOps Lab is part diagramming tool, part monitoring dashboard.  
+It lets users **visualize their network**, **document servers and services**, and **monitor their home lab** — all in one clean, interactive web app.
+
+---
+
+## ⚙️ Core Features
+
+### 🗺️ 1. Interactive Diagram Canvas
+- Drag-and-drop canvas (like draw.io or diagrams.net) to map:
+  - Servers, clients, containers, switches, routers, VMs, and services.
+- Connect nodes with visual links to represent network or logical relationships.
+- Click any node to open a details sidebar.
+
+### 🖥️ 2. Node Details & Metadata
+Each node (or “host”) can have:
+- Name, description, IP, OS type (Proxmox, Ubuntu Server, Windows Server, TrueNAS, Unraid, etc.)
+- Tags (e.g., “virtual”, “container”, “NAS”)
+- Links to service URLs (e.g., https://plex.local, https://proxmox.local)
+- Custom fields (CPU, RAM, storage, uptime)
+
+### 🌐 3. Service Discovery (optional)
+- Backend scans the network via ARP + ICMP + mDNS/UPnP.
+- Detects live hosts and services.
+- Suggests nodes to add or merge with existing ones.
+- Uses safe, configurable discovery interval.
+
+### 📈 4. Monitoring & Health View
+- Each node can have a heartbeat check (ping or HTTP).
+- Basic metrics (uptime %, last seen, response time).
+- Optional agent integration (future feature).
+
+### 🧩 5. Data Management
+- All data stored in local database (SQLite or PostgreSQL via Supabase).
+- Export/import topology as JSON or YAML.
+- Optional Git sync for versioned backups.
+
+### 👥 6. UI/UX
+- Built with modern UI libraries (React + Tailwind + D3.js or React Flow).
+- Dark theme by default, polished and responsive.
+- Sidebar for node info and logs.
+- Global search bar (Cmd+K) for quick navigation.
+
+### 🐳 7. Deployment
+- Fully Dockerized setup:
+  - homeops-web (frontend)
+  - homeops-api (backend)
+  - homeops-db (Postgres)
+  - Optional homeops-agent (lightweight network scanner)
+- Runs locally or on a small home server.
+
+---
+
+## 🧱 Tech Stack
+
+Frontend:
+- React + TypeScript  
+- Vite + Tailwind CSS  
+- React Flow or D3.js for topology visualization  
+- Zustand or Redux for state management  
+- Axios for API calls  
+
+Backend:
+- Python (FastAPI) or Node.js (Express) — developer’s choice  
+- RESTful endpoints for nodes, services, monitoring, discovery  
+- Async background jobs for scanning (Celery + Redis or simple background threads)  
+- SQLAlchemy or Prisma ORM  
+- JWT-based auth (local users, no external login required)
+
+Database:
+- PostgreSQL (recommended)  
+- Optional: SQLite fallback for single-user setups  
+
+Deployment & DevOps:
+- Docker Compose setup for all services  
+- .env configuration for secrets, DB, and scan intervals  
+- Optional Supabase integration for cloud sync  
+
+---
+
+## 📦 Project Structure
+
+homeops-lab/
+ ├── backend/
+ │   ├── main.py (FastAPI)
+ │   ├── models/
+ │   ├── routes/
+ │   ├── services/
+ │   └── utils/
+ ├── frontend/
+ │   ├── src/
+ │   │   ├── components/
+ │   │   ├── pages/
+ │   │   ├── store/
+ │   │   └── api/
+ │   └── index.html
+ ├── docker-compose.yml
+ ├── .env.example
+ ├── README.md
+ └── scripts/
+     └── network_scan.py
+
+---
+
+## 🧭 Initial User Flow
+
+1. User opens the app → Sees an empty canvas (“Your Lab”).
+2. Click Discover → Network scan runs → Detected hosts appear as suggested nodes.
+3. User drags/arranges nodes, adds details, links, and service URLs.
+4. Health checks run in the background.
+5. Dashboard view shows uptime, map, and quick access to service URLs.
+
+---
+
+## 💡 Design Goals
+- Simple enough for hobbyists.
+- Visual and tactile like a whiteboard.
+- Private: all local by default.
+- Fast setup with Docker Compose (docker compose up -d).
+
+---
+
+## 🧰 Optional Enhancements (future-ready)
+- Add lightweight agent for distributed scanning.
+- Integrate Grafana-like charts (CPU, RAM, uptime).
+- Support MQTT/Home Assistant bridge.
+- Add collaboration mode for multiple users.
+
+---
+
+## 📣 Branding & Identity
+- App Name: HomeOps Lab
+- Tagline: “Your home lab, visualized and monitored.”
+- Theme: Dark mode, teal + orange accents.
+- Logo: Stylized “H” with node links and pulse dot.
+
+---
+
+## ✅ Deliverable
+Generate the full initial codebase for HomeOps Lab with:
+- Working frontend scaffold (React + Tailwind)
+- Working backend scaffold (FastAPI or Express)
+- Shared Docker Compose + environment config
+- Example API route (/api/nodes)
+- Example frontend page showing dummy node graph with sample data
+- README with setup instructions
+
+Once the app scaffolding is complete, ensure that:
+- I can docker compose up -d to run everything locally.
+- Frontend auto-connects to backend via environment variable.
+- README includes how to add nodes manually via the web UI.
