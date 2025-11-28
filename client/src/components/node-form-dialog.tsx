@@ -92,9 +92,10 @@ interface NodeFormDialogProps {
     storageUsed?: string;
     metadata?: DeviceMetadata;
   };
+  defaultDeviceType?: 'server' | 'router' | 'switch' | 'access-point' | 'nas' | 'container';
 }
 
-export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps) {
+export function NodeFormDialog({ open, onOpenChange, node, defaultDeviceType }: NodeFormDialogProps) {
   const { toast } = useToast();
   const isEdit = !!node;
 
@@ -104,7 +105,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
       name: node?.name || "",
       ip: node?.ip || "",
       osType: node?.osType || "",
-      deviceType: (node?.deviceType as any) || "server",
+      deviceType: (node?.deviceType as any) || defaultDeviceType || "server",
       status: node?.status || "unknown",
       tags: node?.tags?.join(", ") || "",
       services: node?.services || [],
@@ -125,7 +126,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
         name: node?.name || "",
         ip: node?.ip || "",
         osType: node?.osType || "",
-        deviceType: (node?.deviceType as any) || "server",
+        deviceType: (node?.deviceType as any) || defaultDeviceType || "server",
         status: node?.status || "unknown",
         tags: node?.tags?.join(", ") || "",
         services: node?.services || [],
@@ -134,7 +135,7 @@ export function NodeFormDialog({ open, onOpenChange, node }: NodeFormDialogProps
         metadata: node?.metadata || undefined,
       });
     }
-  }, [open, node, form]);
+  }, [open, node, form, defaultDeviceType]);
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertNode) => {

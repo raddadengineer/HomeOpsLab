@@ -311,18 +311,8 @@ export default function SettingsPage() {
           storageTotal: editingNas.storageTotal || undefined,
           storageUsed: editingNas.storageUsed || undefined,
           metadata: editingNas.metadata || undefined,
-        } : {
-          id: '',
-          name: '',
-          ip: '',
-          osType: 'TrueNAS',
-          deviceType: 'nas',
-          status: 'online',
-          tags: [],
-          services: [],
-          storageTotal: '',
-          storageUsed: '',
-        }}
+        } : undefined}
+        defaultDeviceType="nas"
       />
 
       {/* Delete Confirmation Dialog */}
