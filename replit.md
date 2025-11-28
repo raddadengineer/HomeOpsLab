@@ -163,6 +163,14 @@ Preferred communication style: Simple, everyday language.
 - Network discovery remains mocked in UI (planned for future release)
 - Metadata validation uses flexible `z.any()` schema for maximum compatibility across device types (trade-off: accepts any JSON structure vs strict per-device validation)
 
+**Storage Settings** (November 28, 2025)
+- Added Storage Configuration section to Settings page
+- NAS device management with add/edit/delete functionality
+- Aggregated storage totals from all NAS devices displayed
+- Individual NAS devices shown with progress bars and status
+- "Add NAS" button pre-selects NAS device type for quick setup
+- Storage summary shows total capacity, used space, and percentage
+
 **Self-Hosted Docker Deployment** (October 14, 2025)
 - Complete Docker configuration for self-hosting
 - Multi-stage Dockerfile for optimized production builds
