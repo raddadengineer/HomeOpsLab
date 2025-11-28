@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { HardDrive, Plus, Pencil, Trash2 } from "lucide-react";
+import { HardDrive, Plus, Pencil, Trash2, Network, Wifi } from "lucide-react";
 import { useState } from "react";
 import { NodeFormDialog } from "@/components/node-form-dialog";
 import type { Node } from "@shared/schema";
@@ -24,11 +24,91 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+interface NetworkRange {
+  id: string;
+  name: string;
+  cidr: string;
+  enabled: boolean;
+}
+
+interface Vlan {
+  id: string;
+  name: string;
+  vlanId: number;
+  cidr: string;
+  description: string;
+  enabled: boolean;
+}
+
 export default function SettingsPage() {
   const { toast } = useToast();
   const [nasDialogOpen, setNasDialogOpen] = useState(false);
   const [editingNas, setEditingNas] = useState<Node | null>(null);
   const [deleteNasId, setDeleteNasId] = useState<string | null>(null);
+
+  // Network configuration state
+  const [networks, setNetworks] = useState<NetworkRange[]>([
+    { id: '1', name: 'Main LAN', cidr: '192.168.1.0/24', enabled: true },
+  ]);
+  const [vlans, setVlans] = useState<Vlan[]>([
+    { id: '1', name: 'Management', vlanId: 10, cidr: '10.0.10.0/24', description: 'Network management devices', enabled: true },
+  ]);
+  const [newNetworkCidr, setNewNetworkCidr] = useState('');
+  const [newNetworkName, setNewNetworkName] = useState('');
+  const [newVlanName, setNewVlanName] = useState('');
+  const [newVlanId, setNewVlanId] = useState('');
+  const [newVlanCidr, setNewVlanCidr] = useState('');
+  const [newVlanDesc, setNewVlanDesc] = useState('');
+
+  const addNetwork = () => {
+    if (newNetworkCidr && newNetworkName) {
+      setNetworks([...networks, {
+        id: Date.now().toString(),
+        name: newNetworkName,
+        cidr: newNetworkCidr,
+        enabled: true,
+      }]);
+      setNewNetworkCidr('');
+      setNewNetworkName('');
+      toast({ title: "Network Added", description: `${newNetworkName} has been added to scan list` });
+    }
+  };
+
+  const removeNetwork = (id: string) => {
+    setNetworks(networks.filter(n => n.id !== id));
+    toast({ title: "Network Removed", description: "Network has been removed from scan list" });
+  };
+
+  const toggleNetwork = (id: string) => {
+    setNetworks(networks.map(n => n.id === id ? { ...n, enabled: !n.enabled } : n));
+  };
+
+  const addVlan = () => {
+    if (newVlanName && newVlanId && newVlanCidr) {
+      setVlans([...vlans, {
+        id: Date.now().toString(),
+        name: newVlanName,
+        vlanId: parseInt(newVlanId),
+        cidr: newVlanCidr,
+        description: newVlanDesc,
+        enabled: true,
+      }]);
+      setNewVlanName('');
+      setNewVlanId('');
+      setNewVlanCidr('');
+      setNewVlanDesc('');
+      toast({ title: "VLAN Added", description: `VLAN ${newVlanId} (${newVlanName}) has been added` });
+    }
+  };
+
+  const removeVlan = (id: string) => {
+    setVlans(vlans.filter(v => v.id !== id));
+    toast({ title: "VLAN Removed", description: "VLAN has been removed from configuration" });
+  };
+
+  const toggleVlan = (id: string) => {
+    setVlans(vlans.map(v => v.id === id ? { ...v, enabled: !v.enabled } : v));
+  };
 
   const { data: nodes = [], isLoading } = useQuery<Node[]>({
     queryKey: ['/api/nodes'],
@@ -208,35 +288,214 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Network Configuration</CardTitle>
-          <CardDescription>Configure network scanning and discovery settings</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="network-range">Network Range</Label>
-            <Input 
-              id="network-range" 
-              placeholder="192.168.1.0/24" 
-              defaultValue="192.168.1.0/24"
-              data-testid="input-network-range"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="scan-interval">Scan Interval (minutes)</Label>
-            <Input 
-              id="scan-interval" 
-              type="number" 
-              placeholder="60" 
-              defaultValue="60"
-              data-testid="input-scan-interval"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Auto Discovery</Label>
-              <p className="text-sm text-muted-foreground">Automatically scan for new devices</p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <Network className="h-5 w-5 text-blue-500" />
             </div>
-            <Switch defaultChecked data-testid="switch-auto-discovery" />
+            <div>
+              <CardTitle>Network Configuration</CardTitle>
+              <CardDescription>Configure network ranges and VLANs for scanning</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Network Ranges */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">Network Ranges</Label>
+              <Badge variant="outline">{networks.filter(n => n.enabled).length} active</Badge>
+            </div>
+            
+            {/* Existing Networks */}
+            <div className="space-y-2">
+              {networks.map((network) => (
+                <div 
+                  key={network.id} 
+                  className={`flex items-center gap-3 p-3 rounded-lg border ${network.enabled ? 'bg-card' : 'bg-muted/50 opacity-60'}`}
+                  data-testid={`network-range-${network.id}`}
+                >
+                  <Switch 
+                    checked={network.enabled} 
+                    onCheckedChange={() => toggleNetwork(network.id)}
+                    data-testid={`switch-network-${network.id}`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{network.name}</span>
+                      <Badge variant="secondary" className="font-mono text-xs">{network.cidr}</Badge>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => removeNetwork(network.id)}
+                    data-testid={`button-remove-network-${network.id}`}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-400" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* Add New Network */}
+            <div className="flex gap-2 items-end">
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="new-network-name" className="text-xs text-muted-foreground">Name</Label>
+                <Input 
+                  id="new-network-name"
+                  placeholder="e.g. Guest Network"
+                  value={newNetworkName}
+                  onChange={(e) => setNewNetworkName(e.target.value)}
+                  data-testid="input-new-network-name"
+                />
+              </div>
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="new-network-cidr" className="text-xs text-muted-foreground">CIDR Range</Label>
+                <Input 
+                  id="new-network-cidr"
+                  placeholder="e.g. 192.168.2.0/24"
+                  value={newNetworkCidr}
+                  onChange={(e) => setNewNetworkCidr(e.target.value)}
+                  data-testid="input-new-network-cidr"
+                />
+              </div>
+              <Button onClick={addNetwork} size="sm" data-testid="button-add-network">
+                <Plus className="h-4 w-4 mr-1" />
+                Add
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* VLANs */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Wifi className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-base font-medium">VLANs</Label>
+              </div>
+              <Badge variant="outline">{vlans.filter(v => v.enabled).length} active</Badge>
+            </div>
+            
+            {/* Existing VLANs */}
+            <div className="space-y-2">
+              {vlans.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No VLANs configured
+                </div>
+              ) : (
+                vlans.map((vlan) => (
+                  <div 
+                    key={vlan.id} 
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${vlan.enabled ? 'bg-card' : 'bg-muted/50 opacity-60'}`}
+                    data-testid={`vlan-${vlan.id}`}
+                  >
+                    <Switch 
+                      checked={vlan.enabled} 
+                      onCheckedChange={() => toggleVlan(vlan.id)}
+                      data-testid={`switch-vlan-${vlan.id}`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
+                          VLAN {vlan.vlanId}
+                        </Badge>
+                        <span className="font-medium">{vlan.name}</span>
+                        <Badge variant="secondary" className="font-mono text-xs">{vlan.cidr}</Badge>
+                      </div>
+                      {vlan.description && (
+                        <p className="text-xs text-muted-foreground mt-1">{vlan.description}</p>
+                      )}
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => removeVlan(vlan.id)}
+                      data-testid={`button-remove-vlan-${vlan.id}`}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Add New VLAN */}
+            <div className="space-y-2">
+              <div className="grid grid-cols-4 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="new-vlan-id" className="text-xs text-muted-foreground">VLAN ID</Label>
+                  <Input 
+                    id="new-vlan-id"
+                    type="number"
+                    placeholder="e.g. 20"
+                    value={newVlanId}
+                    onChange={(e) => setNewVlanId(e.target.value)}
+                    data-testid="input-new-vlan-id"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="new-vlan-name" className="text-xs text-muted-foreground">Name</Label>
+                  <Input 
+                    id="new-vlan-name"
+                    placeholder="e.g. IoT"
+                    value={newVlanName}
+                    onChange={(e) => setNewVlanName(e.target.value)}
+                    data-testid="input-new-vlan-name"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="new-vlan-cidr" className="text-xs text-muted-foreground">CIDR</Label>
+                  <Input 
+                    id="new-vlan-cidr"
+                    placeholder="e.g. 10.0.20.0/24"
+                    value={newVlanCidr}
+                    onChange={(e) => setNewVlanCidr(e.target.value)}
+                    data-testid="input-new-vlan-cidr"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="new-vlan-desc" className="text-xs text-muted-foreground">Description</Label>
+                  <Input 
+                    id="new-vlan-desc"
+                    placeholder="Optional"
+                    value={newVlanDesc}
+                    onChange={(e) => setNewVlanDesc(e.target.value)}
+                    data-testid="input-new-vlan-desc"
+                  />
+                </div>
+              </div>
+              <Button onClick={addVlan} size="sm" className="w-full" data-testid="button-add-vlan">
+                <Plus className="h-4 w-4 mr-1" />
+                Add VLAN
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Scan Settings */}
+          <div className="space-y-4">
+            <Label className="text-base font-medium">Scan Settings</Label>
+            <div className="space-y-2">
+              <Label htmlFor="scan-interval" className="text-sm text-muted-foreground">Scan Interval (minutes)</Label>
+              <Input 
+                id="scan-interval" 
+                type="number" 
+                placeholder="60" 
+                defaultValue="60"
+                className="max-w-32"
+                data-testid="input-scan-interval"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Auto Discovery</Label>
+                <p className="text-sm text-muted-foreground">Automatically scan for new devices on enabled networks</p>
+              </div>
+              <Switch defaultChecked data-testid="switch-auto-discovery" />
+            </div>
           </div>
         </CardContent>
       </Card>
