@@ -163,6 +163,16 @@ Preferred communication style: Simple, everyday language.
 - Network discovery remains mocked in UI (planned for future release)
 - Metadata validation uses flexible `z.any()` schema for maximum compatibility across device types (trade-off: accepts any JSON structure vs strict per-device validation)
 
+**Network & VLAN Configuration** (November 28, 2025)
+- Enhanced Network Configuration to support multiple network ranges
+- VLAN management with ID, name, CIDR, and optional description
+- Toggle switches to enable/disable individual networks and VLANs
+- Add/remove functionality for both networks and VLANs
+- Active count badges showing enabled networks/VLANs
+- Default sample entries for Main LAN and Management VLAN
+- Scan settings section with configurable interval and auto-discovery toggle
+- Configuration stored in local state (UI only, not yet persisted to database)
+
 **Storage Settings** (November 28, 2025)
 - Added Storage Configuration section to Settings page
 - NAS device management with add/edit/delete functionality
