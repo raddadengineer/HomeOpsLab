@@ -32,6 +32,28 @@ export default function Dashboard() {
   }, 0);
   const storagePercent = totalStorage > 0 ? Math.round((usedStorage / totalStorage) * 100) : 0;
 
+  // Format storage values - convert to TB if >= 1000 GB, remove unnecessary decimals
+  const formatStorage = (gb: number): string => {
+    if (gb >= 1000) {
+      const tb = gb / 1000;
+      return tb % 1 === 0 ? `${tb} TB` : `${tb.toFixed(1)} TB`;
+    }
+    return gb % 1 === 0 ? `${gb} GB` : `${gb.toFixed(1)} GB`;
+  };
+
+  const formatStorageRange = (used: number, total: number): string => {
+    if (total >= 1000) {
+      const usedTB = used / 1000;
+      const totalTB = total / 1000;
+      const usedStr = usedTB % 1 === 0 ? usedTB.toString() : usedTB.toFixed(1);
+      const totalStr = totalTB % 1 === 0 ? totalTB.toString() : totalTB.toFixed(1);
+      return `${usedStr}/${totalStr} TB`;
+    }
+    const usedStr = used % 1 === 0 ? used.toString() : used.toFixed(1);
+    const totalStr = total % 1 === 0 ? total.toString() : total.toFixed(1);
+    return `${usedStr}/${totalStr} GB`;
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="mb-8">
@@ -58,7 +80,7 @@ export default function Dashboard() {
         />
         <StatCard 
           title="Storage" 
-          value={totalStorage > 0 ? `${usedStorage.toFixed(1)}/${totalStorage.toFixed(1)} GB` : 'No NAS'} 
+          value={totalStorage > 0 ? formatStorageRange(usedStorage, totalStorage) : 'No NAS'} 
           icon={HardDrive}
           trend={totalStorage > 0 ? { value: `${storagePercent}% used`, positive: storagePercent < 80 } : undefined}
         />
@@ -93,7 +115,7 @@ export default function Dashboard() {
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Storage Usage</span>
                   <span className="font-semibold text-base">
-                    {totalStorage > 0 ? `${usedStorage.toFixed(1)}/${totalStorage.toFixed(1)} GB` : 'No NAS devices'}
+                    {totalStorage > 0 ? formatStorageRange(usedStorage, totalStorage) : 'No NAS devices'}
                   </span>
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
