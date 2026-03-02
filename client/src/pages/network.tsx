@@ -1,16 +1,20 @@
 import { NetworkCanvas } from '@/components/network-canvas';
 import { NodeDetailPanel } from '@/components/node-detail-panel';
 import { NodeFormDialog } from '@/components/node-form-dialog';
-import { useState, useMemo } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Download, Upload } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import type { Node as FlowNode, Edge as FlowEdge } from 'reactflow';
 import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 import type { Node, Edge } from '@shared/schema';
 
 export default function NetworkPage() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [editingNode, setEditingNode] = useState<Node | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const { data: topology, isLoading } = useQuery<{ nodes: Node[]; edges: Edge[] }>({
     queryKey: ['/api/topology'],
@@ -76,6 +80,45 @@ export default function NetworkPage() {
       document.body.removeChild(a);
     } catch (error) {
       console.error('Export failed:', error);
+      toast({ title: 'Export Failed', description: String(error), variant: 'destructive' });
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const jsonData = JSON.parse(text);
+
+      const response = await fetch('/api/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/topology'] });
+
+      toast({
+        title: 'Import Successful',
+        description: 'Topology topology successfully imported into the map.',
+      });
+    } catch (error) {
+      console.error('Import failed:', error);
+      toast({ title: 'Import Failed', description: String(error), variant: 'destructive' });
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -89,7 +132,14 @@ export default function NetworkPage() {
           <p className="text-base text-muted-foreground mt-1">Interactive topology view</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" data-testid="button-import">
+          <input
+            type="file"
+            accept=".json"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <Button variant="outline" size="sm" onClick={handleImportClick} data-testid="button-import">
             <Upload className="h-4 w-4 mr-2" />
             Import
           </Button>
@@ -130,18 +180,18 @@ export default function NetworkPage() {
         node={
           selectedNode
             ? {
-                id: selectedNode.id,
-                name: selectedNode.name,
-                ip: selectedNode.ip,
-                osType: selectedNode.osType,
-                status: selectedNode.status as 'online' | 'offline' | 'degraded' | 'unknown',
-                tags: selectedNode.tags,
-                services: selectedNode.services,
-                uptime: selectedNode.uptime || undefined,
-                lastSeen: selectedNode.lastSeen
-                  ? new Date(selectedNode.lastSeen).toLocaleString()
-                  : undefined,
-              }
+              id: selectedNode.id,
+              name: selectedNode.name,
+              ip: selectedNode.ip,
+              osType: selectedNode.osType,
+              status: selectedNode.status as 'online' | 'offline' | 'degraded' | 'unknown',
+              tags: selectedNode.tags,
+              services: selectedNode.services,
+              uptime: selectedNode.uptime || undefined,
+              lastSeen: selectedNode.lastSeen
+                ? new Date(selectedNode.lastSeen).toLocaleString()
+                : undefined,
+            }
             : undefined
         }
       />
@@ -152,14 +202,14 @@ export default function NetworkPage() {
         node={
           editingNode
             ? {
-                id: editingNode.id,
-                name: editingNode.name,
-                ip: editingNode.ip,
-                osType: editingNode.osType,
-                status: editingNode.status,
-                tags: editingNode.tags,
-                services: editingNode.services,
-              }
+              id: editingNode.id,
+              name: editingNode.name,
+              ip: editingNode.ip,
+              osType: editingNode.osType,
+              status: editingNode.status,
+              tags: editingNode.tags,
+              services: editingNode.services,
+            }
             : undefined
         }
       />

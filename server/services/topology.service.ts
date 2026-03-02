@@ -21,11 +21,38 @@ export class TopologyService {
       validatedEdges = importEdges.map(edge => insertEdgeSchema.parse(edge));
     }
 
-    // Import nodes
-    const createdNodes = await Promise.all(validatedNodes.map(node => storage.createNode(node)));
+    // Map to track old UUIDs to new UUIDs
+    const uuidMap = new Map<string, string>();
 
-    // Import edges with validated data
-    const createdEdges = await Promise.all(validatedEdges.map(edge => storage.createEdge(edge)));
+    // Import nodes and capture their new UUIDs
+    const createdNodes = [];
+    for (const nodeData of validatedNodes) {
+      // Capture the original ID if it exists in the raw data
+      const originalId = importNodes.find((n: any) => n.name === nodeData.name && n.ip === nodeData.ip)?.id;
+
+      const createdNode = await storage.createNode(nodeData);
+      createdNodes.push(createdNode);
+
+      if (originalId) {
+        uuidMap.set(originalId, createdNode.id);
+      }
+    }
+
+    // Import edges, remap their source and target to the new node UUIDs
+    const createdEdges = [];
+    for (const edge of validatedEdges) {
+      const newSource = uuidMap.get(edge.source) || edge.source;
+      const newTarget = uuidMap.get(edge.target) || edge.target;
+
+      const newEdgeData = {
+        ...edge,
+        source: newSource,
+        target: newTarget,
+      };
+
+      const createdEdge = await storage.createEdge(newEdgeData);
+      createdEdges.push(createdEdge);
+    }
 
     return { createdNodes, createdEdges };
   }

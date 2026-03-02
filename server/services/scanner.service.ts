@@ -144,8 +144,29 @@ class ScannerService {
             timeout: 2,
           });
 
-          const newStatus = result.alive ? 'online' : 'offline';
+          let newStatus = result.alive ? 'online' : 'offline';
           const newUptime = result.alive ? `${result.time}ms` : 'offline';
+
+          // If it is a container with a defined target image, check the docker engine directly!
+          if (newStatus === 'online' && node.deviceType === 'container' && node.metadata && 'image' in node.metadata && node.metadata.image) {
+            try {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 3000);
+              const dockerRes = await fetch(`http://${node.ip}:2375/containers/json`, { signal: controller.signal });
+              clearTimeout(timeoutId);
+
+              if (dockerRes.ok) {
+                const containers = await dockerRes.json();
+                const metadata = node.metadata as any;
+                const isRunning = containers.some((c: any) => c.Image === metadata.image && c.State === 'running');
+                if (!isRunning) {
+                  newStatus = 'offline';
+                }
+              }
+            } catch (dockerErr) {
+              // API probably not open or not docker, fallback to default ICMP alive status.
+            }
+          }
 
           let servicesChanged = false;
           const updatedServices = await Promise.all(
