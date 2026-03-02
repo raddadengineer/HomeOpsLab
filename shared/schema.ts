@@ -6,6 +6,7 @@ import { z } from 'zod';
 export const serviceSchema = z.object({
   name: z.string().min(1, 'Service name is required'),
   url: z.string().url('Must be a valid URL'),
+  status: z.enum(['online', 'offline', 'unknown']).optional(),
 });
 
 export type Service = z.infer<typeof serviceSchema>;
@@ -102,6 +103,16 @@ export const edges = pgTable('edges', {
 });
 
 // Base schema without validation - can be extended
+export const settings = pgTable('settings', {
+  id: varchar('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  networkRanges: jsonb('network_ranges').notNull().default('[]'),
+  vlans: jsonb('vlans').notNull().default('[]'),
+  scanSettings: jsonb('scan_settings').notNull().default('{"interval":60,"autoDiscovery":true}'),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export const baseInsertNodeSchema = createInsertSchema(nodes)
   .omit({
     id: true,
@@ -207,7 +218,14 @@ export const insertEdgeSchema = createInsertSchema(edges).omit({
   createdAt: true,
 });
 
+export const insertSettingsSchema = createInsertSchema(settings).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export type InsertNode = z.infer<typeof insertNodeSchema>;
 export type Node = typeof nodes.$inferSelect;
 export type InsertEdge = z.infer<typeof insertEdgeSchema>;
 export type Edge = typeof edges.$inferSelect;
+export type InsertSettings = z.infer<typeof insertSettingsSchema>;
+export type Settings = typeof settings.$inferSelect;

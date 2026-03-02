@@ -5,52 +5,70 @@ import { Radar, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { StatusBadge } from '@/components/status-badge';
 
-// TODO: Remove mock data
-const mockDiscoveredNodes = [
-  {
-    id: 'd1',
-    ip: '192.168.1.100',
-    hostname: 'unknown-device-1',
-    manufacturer: 'Synology',
-    status: 'online' as const,
-  },
-  {
-    id: 'd2',
-    ip: '192.168.1.101',
-    hostname: 'raspberry-pi',
-    manufacturer: 'Raspberry Pi Foundation',
-    status: 'online' as const,
-  },
-  {
-    id: 'd3',
-    ip: '192.168.1.102',
-    hostname: 'unifi-switch',
-    manufacturer: 'Ubiquiti',
-    status: 'online' as const,
-  },
-];
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function DiscoveryPage() {
-  const [isScanning, setIsScanning] = useState(false);
-  const [discoveredNodes, setDiscoveredNodes] = useState(mockDiscoveredNodes);
+  const { toast } = useToast();
+  const [discoveredNodes, setDiscoveredNodes] = useState<any[]>([]);
+  const [lastScanTime, setLastScanTime] = useState<string | null>(null);
+
+  const { data: settingsData } = useQuery<any>({
+    queryKey: ['/api/settings'],
+  });
+
+  const activeRanges = (settingsData?.networkRanges || []).filter((r: any) => r.enabled);
+
+  const scanMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest('POST', '/api/discovery/scan');
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setDiscoveredNodes(data.nodes || []);
+      setLastScanTime(data.timestamp);
+      toast({
+        title: 'Scan Complete',
+        description: `Found ${data.nodes?.length || 0} new devices`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Scan Failed',
+        description: 'Failed to complete network discovery sweep',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const addNodeMutation = useMutation({
+    mutationFn: async (nodeData: any) => {
+      // Create a node without the temporary 'id' from discovery
+      const { id, ...payload } = nodeData;
+      await apiRequest('POST', '/api/nodes', { ...payload, name: payload.hostname });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/nodes'] });
+      setDiscoveredNodes((prev) => prev.filter((n) => n.id !== variables.id));
+      toast({ title: 'Device Added', description: 'Device has been added to your inventory' });
+    },
+    onError: () => {
+      toast({
+        title: 'Failed to add',
+        description: 'Could not add device',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const handleScan = () => {
-    setIsScanning(true);
-    console.log('Starting network scan...');
-    setTimeout(() => {
-      setIsScanning(false);
-      console.log('Scan complete');
-    }, 2000);
-  };
-
-  const handleAddNode = (nodeId: string) => {
-    console.log('Adding node:', nodeId);
-    setDiscoveredNodes(prev => prev.filter(n => n.id !== nodeId));
+    scanMutation.mutate();
   };
 
   const handleDismiss = (nodeId: string) => {
-    console.log('Dismissing node:', nodeId);
-    setDiscoveredNodes(prev => prev.filter(n => n.id !== nodeId));
+    setDiscoveredNodes((prev) => prev.filter((n) => n.id !== nodeId));
   };
 
   return (
@@ -64,9 +82,9 @@ export default function DiscoveryPage() {
             Automatically detect devices on your network
           </p>
         </div>
-        <Button onClick={handleScan} disabled={isScanning} data-testid="button-start-scan">
-          <Radar className={`h-4 w-4 mr-2 ${isScanning ? 'animate-spin' : ''}`} />
-          {isScanning ? 'Scanning...' : 'Start Scan'}
+        <Button onClick={handleScan} disabled={scanMutation.isPending} data-testid="button-start-scan">
+          <Radar className={`h-4 w-4 mr-2 ${scanMutation.isPending ? 'animate-spin' : ''}`} />
+          {scanMutation.isPending ? 'Scanning...' : 'Start Scan'}
         </Button>
       </div>
 
@@ -78,17 +96,25 @@ export default function DiscoveryPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Network Range</label>
-              <Badge variant="secondary" className="font-mono">
-                192.168.1.0/24
-              </Badge>
+              {activeRanges.length > 0 ? (
+                activeRanges.map((r: any) => (
+                  <Badge key={r.id} variant="secondary" className="font-mono mr-1">
+                    {r.cidr}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-muted-foreground text-sm">No ranges enabled</span>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Scan Method</label>
-              <Badge variant="secondary">ARP + ICMP</Badge>
+              <Badge variant="secondary">ICMP Ping Sweep</Badge>
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Last Scan</label>
-              <Badge variant="secondary">3 hours ago</Badge>
+              <Badge variant="secondary">
+                {lastScanTime ? formatDistanceToNow(new Date(lastScanTime), { addSuffix: true }) : 'Never'}
+              </Badge>
             </div>
           </div>
         </CardContent>
@@ -133,7 +159,8 @@ export default function DiscoveryPage() {
                     <div className="flex gap-2 flex-shrink-0">
                       <Button
                         size="sm"
-                        onClick={() => handleAddNode(node.id)}
+                        onClick={() => addNodeMutation.mutate(node)}
+                        disabled={addNodeMutation.isPending}
                         data-testid={`button-add-${node.id}`}
                       >
                         <Plus className="h-4 w-4 mr-1" />

@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { nodeController } from '../controllers/node.controller';
+import { metricsController } from '../controllers/metrics.controller';
 
 const router = Router();
 
+router.get('/:id/metrics', metricsController.getNodeMetrics);
 router.get('/', nodeController.getAllNodes);
 router.get('/:id', nodeController.getNode);
 router.post('/', nodeController.createNode);

@@ -4,10 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatusBadge } from './status-badge';
-import { useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import type { Service, DeviceMetadata } from '@shared/schema';
+import { SSHConsole } from './ssh-console';
 
 interface NodeDetailPanelProps {
   isOpen: boolean;
@@ -32,6 +33,12 @@ interface NodeDetailPanelProps {
 
 export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPanelProps) {
   const { toast } = useToast();
+
+  const { data: metricsData, isLoading: isMetricsLoading, isError: isMetricsError } = useQuery<any>({
+    queryKey: [`/api/nodes/${node?.id}/metrics`],
+    enabled: !!node && isOpen,
+    refetchInterval: 5000,
+  });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -86,7 +93,7 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
         <Separator className="my-4" />
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${node.deviceType === 'server' ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="overview" data-testid="tab-overview">
               Overview
             </TabsTrigger>
@@ -96,6 +103,11 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
             <TabsTrigger value="monitoring" data-testid="tab-monitoring">
               Monitoring
             </TabsTrigger>
+            {node.deviceType === 'server' && (
+              <TabsTrigger value="terminal" data-testid="tab-terminal">
+                Terminal
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 mt-4">
@@ -299,11 +311,23 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
                     onClick={() => window.open(service.url, '_blank', 'noopener,noreferrer')}
                     data-testid={`button-open-service-${index}`}
                   >
-                    <ExternalLink className="h-4 w-4" />
-                    <div className="flex-1 text-left">
-                      <div className="font-medium">{service.name}</div>
-                      <div className="text-xs text-muted-foreground font-mono truncate">
-                        {service.url}
+                    <ExternalLink className="h-4 w-4 mt-1 self-start" />
+                    <div className="flex-1 text-left flex items-center justify-between">
+                      <div>
+                        <div className="font-medium flex items-center gap-2">
+                          {service.name}
+                          <span
+                            className={`h-2 w-2 rounded-full ${service.status === 'online'
+                              ? 'bg-green-500'
+                              : service.status === 'offline'
+                                ? 'bg-red-500'
+                                : 'bg-muted-foreground'
+                              }`}
+                          />
+                        </div>
+                        <div className="text-xs text-muted-foreground font-mono truncate max-w-[220px]">
+                          {service.url}
+                        </div>
                       </div>
                     </div>
                   </Button>
@@ -316,32 +340,67 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
 
           <TabsContent value="monitoring" className="space-y-4 mt-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-4">
                 <Activity className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Health Status</h3>
+                <h3 className="text-sm font-semibold">Live System Resources</h3>
               </div>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-muted-foreground">Response Time</span>
-                    <span className="font-mono">12ms</span>
+
+              {isMetricsLoading && !metricsData ? (
+                <div className="text-sm text-muted-foreground animate-pulse text-center py-6">
+                  Polling node_exporter metrics on port 9100...
+                </div>
+              ) : isMetricsError ? (
+                <div className="text-sm text-red-500 bg-red-500/10 p-4 rounded-md text-center">
+                  Unable to fetch metrics. Ensure Prometheus <b>node_exporter</b> is running on port 9100 at {node.ip}.
+                </div>
+              ) : metricsData && metricsData.metrics ? (
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-muted-foreground">Load Average (1m)</span>
+                      <span className="font-mono">{metricsData.metrics.load1}</span>
+                    </div>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full w-1/4 bg-green-500" />
+
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-muted-foreground">Memory Usage</span>
+                      <span className="font-mono">
+                        {metricsData.metrics.memory.usedPercent}% ({metricsData.metrics.memory.free} GB Free)
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full bg-primary transition-all duration-500 ${Number(metricsData.metrics.memory.usedPercent) > 85 ? 'bg-red-500' : ''}`}
+                        style={{ width: `${Math.min(100, Math.max(0, metricsData.metrics.memory.usedPercent))}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-muted-foreground">Root Disk Usage</span>
+                      <span className="font-mono">
+                        {metricsData.metrics.disk.usedPercent}% ({metricsData.metrics.disk.free} GB Free)
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full bg-primary transition-all duration-500 ${Number(metricsData.metrics.disk.usedPercent) > 85 ? 'bg-red-500' : ''}`}
+                        style={{ width: `${Math.min(100, Math.max(0, metricsData.metrics.disk.usedPercent))}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-muted-foreground">Uptime</span>
-                    <span className="font-mono">99.8%</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full w-full bg-green-500" />
-                  </div>
-                </div>
-              </div>
+              ) : null}
             </div>
           </TabsContent>
+
+          {node.deviceType === 'server' && (
+            <TabsContent value="terminal" className="mt-4">
+              <SSHConsole ip={node.ip} />
+            </TabsContent>
+          )}
         </Tabs>
 
         <Separator className="my-6" />

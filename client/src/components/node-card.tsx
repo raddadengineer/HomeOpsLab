@@ -86,11 +86,11 @@ export function NodeCard({
   const storagePercent =
     storageTotal && storageUsed
       ? (() => {
-          const total = parseFloat(storageTotal);
-          const used = parseFloat(storageUsed);
-          if (isNaN(total) || isNaN(used) || total <= 0) return null;
-          return Math.round((used / total) * 100);
-        })()
+        const total = parseFloat(storageTotal);
+        const used = parseFloat(storageUsed);
+        if (isNaN(total) || isNaN(used) || total <= 0) return null;
+        return Math.round((used / total) * 100);
+      })()
       : null;
 
   return (
@@ -266,9 +266,17 @@ export function NodeCard({
               <Badge
                 key={index}
                 variant="outline"
-                className="text-xs"
+                className="text-xs flex items-center"
                 data-testid={`badge-service-${id}-${index}`}
               >
+                <div
+                  className={`mr-1.5 h-1.5 w-1.5 rounded-full ${service.status === 'online'
+                      ? 'bg-green-500'
+                      : service.status === 'offline'
+                        ? 'bg-red-500'
+                        : 'bg-muted-foreground'
+                    }`}
+                />
                 {service.name}
               </Badge>
             ))}

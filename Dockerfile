@@ -1,13 +1,13 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (ignoring scripts to bypass husky)
+RUN npm ci --ignore-scripts
 
 # Copy source code
 COPY . .
@@ -16,20 +16,20 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
+# Install production dependencies only (ignoring scripts to bypass husky)
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/db ./db
 COPY --from=builder /app/shared ./shared
+COPY --from=builder /app/drizzle.config.js ./drizzle.config.js
 
 # Expose port
 EXPOSE 5000
@@ -38,4 +38,4 @@ EXPOSE 5000
 ENV NODE_ENV=production
 
 # Start the application
-CMD ["node", "dist/index.js"]
+CMD ["npm", "start"]

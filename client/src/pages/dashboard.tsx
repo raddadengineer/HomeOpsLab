@@ -20,6 +20,16 @@ export default function Dashboard() {
   const totalNodes = nodes.length;
   const recentNodes = nodes.slice(0, 3);
 
+  const networkUptimePercent = totalNodes > 0 ? ((onlineNodes / totalNodes) * 100).toFixed(1) : '100.0';
+  const totalServices = nodes.reduce((acc, n) => acc + (n.services?.length || 0), 0);
+  const onlineServices = nodes.filter(n => n.status === 'online').reduce((acc, n) => acc + (n.services?.length || 0), 0);
+  const servicesPercent = totalServices > 0 ? Math.round((onlineServices / totalServices) * 100) : 0;
+
+  const recentlyUpdatedNodes = [...nodes]
+    .filter(n => n.updatedAt)
+    .sort((a, b) => new Date(b.updatedAt!).getTime() - new Date(a.updatedAt!).getTime())
+    .slice(0, 3);
+
   // Calculate NAS storage with safe numeric parsing
   const nasDevices = nodes.filter(n => n.deviceType === 'nas' && n.storageTotal && n.storageUsed);
   const totalStorage = nasDevices.reduce((acc, n) => {
@@ -98,19 +108,25 @@ export default function Dashboard() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Network Uptime</span>
-                  <span className="font-semibold text-base">99.8%</span>
+                  <span className="font-semibold text-base">{networkUptimePercent}%</span>
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-300" />
+                  <div
+                    className={`h-full transition-all duration-300 ${Number(networkUptimePercent) < 80 ? 'bg-gradient-to-r from-red-500 to-orange-400' : 'bg-gradient-to-r from-green-500 to-emerald-400'}`}
+                    style={{ width: `${networkUptimePercent}%` }}
+                  />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Services Active</span>
-                  <span className="font-semibold text-base">23/24</span>
+                  <span className="font-semibold text-base">{onlineServices}/{totalServices}</span>
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-11/12 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-300" />
+                  <div
+                    className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-300"
+                    style={{ width: `${servicesPercent}%` }}
+                  />
                 </div>
               </div>
               <div>
@@ -124,13 +140,12 @@ export default function Dashboard() {
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${
-                      storagePercent > 80
+                    className={`h-full transition-all duration-300 ${storagePercent > 80
                         ? 'bg-gradient-to-r from-red-500 to-orange-400'
                         : storagePercent > 60
                           ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
                           : 'bg-gradient-to-r from-green-500 to-emerald-400'
-                    }`}
+                      }`}
                     style={{ width: `${storagePercent}%` }}
                   />
                 </div>
@@ -145,27 +160,18 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-start gap-3 p-2 rounded-lg hover-elevate transition-all duration-200">
-                <div className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0 animate-pulse" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">Proxmox Server came online</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">2 minutes ago</p>
+              {recentlyUpdatedNodes.map(node => (
+                <div key={node.id} className="flex items-start gap-3 p-2 rounded-lg hover-elevate transition-all duration-200">
+                  <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${node.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{node.name} {node.status === 'online' ? 'is online' : 'went offline/updated'}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Last seen {node.lastSeen ? new Date(node.lastSeen).toLocaleString() : 'Unknown'}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-3 p-2 rounded-lg hover-elevate transition-all duration-200">
-                <div className="w-2 h-2 rounded-full bg-red-500 mt-2 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">Docker Host went offline</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">1 hour ago</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-2 rounded-lg hover-elevate transition-all duration-200">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">Network scan completed</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">3 hours ago</p>
-                </div>
-              </div>
+              ))}
+              {recentlyUpdatedNodes.length === 0 && (
+                <p className="text-sm text-muted-foreground">No recent activity detected.</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -210,21 +216,21 @@ export default function Dashboard() {
         node={
           selectedNode
             ? {
-                id: selectedNode.id,
-                name: selectedNode.name,
-                ip: selectedNode.ip,
-                osType: selectedNode.osType,
-                deviceType: selectedNode.deviceType,
-                status: selectedNode.status as 'online' | 'offline' | 'degraded' | 'unknown',
-                tags: selectedNode.tags,
-                services: selectedNode.services,
-                storageTotal: selectedNode.storageTotal || undefined,
-                storageUsed: selectedNode.storageUsed || undefined,
-                uptime: selectedNode.uptime || undefined,
-                lastSeen: selectedNode.lastSeen
-                  ? new Date(selectedNode.lastSeen).toLocaleString()
-                  : undefined,
-              }
+              id: selectedNode.id,
+              name: selectedNode.name,
+              ip: selectedNode.ip,
+              osType: selectedNode.osType,
+              deviceType: selectedNode.deviceType,
+              status: selectedNode.status as 'online' | 'offline' | 'degraded' | 'unknown',
+              tags: selectedNode.tags,
+              services: selectedNode.services,
+              storageTotal: selectedNode.storageTotal || undefined,
+              storageUsed: selectedNode.storageUsed || undefined,
+              uptime: selectedNode.uptime || undefined,
+              lastSeen: selectedNode.lastSeen
+                ? new Date(selectedNode.lastSeen).toLocaleString()
+                : undefined,
+            }
             : undefined
         }
       />

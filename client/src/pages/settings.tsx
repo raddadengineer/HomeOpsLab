@@ -10,7 +10,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { HardDrive, Plus, Pencil, Trash2, Network, Wifi } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NodeFormDialog } from '@/components/node-form-dialog';
 import type { Node } from '@shared/schema';
 import {
@@ -47,19 +47,37 @@ export default function SettingsPage() {
   const [deleteNasId, setDeleteNasId] = useState<string | null>(null);
 
   // Network configuration state
-  const [networks, setNetworks] = useState<NetworkRange[]>([
-    { id: '1', name: 'Main LAN', cidr: '192.168.1.0/24', enabled: true },
-  ]);
-  const [vlans, setVlans] = useState<Vlan[]>([
-    {
-      id: '1',
-      name: 'Management',
-      vlanId: 10,
-      cidr: '10.0.10.0/24',
-      description: 'Network management devices',
-      enabled: true,
+  const { data: settingsData } = useQuery<any>({
+    queryKey: ['/api/settings'],
+  });
+
+  const saveSettingsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      await apiRequest('PUT', '/api/settings', data);
     },
-  ]);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      toast({
+        title: 'Settings Saved',
+        description: 'Your configuration has been updated successfully',
+      });
+    },
+  });
+
+  const [networks, setNetworks] = useState<NetworkRange[]>([]);
+  const [vlans, setVlans] = useState<Vlan[]>([]);
+  const [scanInterval, setScanInterval] = useState(60);
+  const [autoDiscovery, setAutoDiscovery] = useState(true);
+
+  useEffect(() => {
+    if (settingsData) {
+      setNetworks(settingsData.networkRanges || []);
+      setVlans(settingsData.vlans || []);
+      setScanInterval(settingsData.scanSettings?.interval || 60);
+      setAutoDiscovery(settingsData.scanSettings?.autoDiscovery ?? true);
+    }
+  }, [settingsData]);
+
   const [newNetworkCidr, setNewNetworkCidr] = useState('');
   const [newNetworkName, setNewNetworkName] = useState('');
   const [newVlanName, setNewVlanName] = useState('');
@@ -546,7 +564,8 @@ export default function SettingsPage() {
                 id="scan-interval"
                 type="number"
                 placeholder="60"
-                defaultValue="60"
+                value={scanInterval}
+                onChange={(e) => setScanInterval(parseInt(e.target.value) || 60)}
                 className="max-w-32"
                 data-testid="input-scan-interval"
               />
@@ -558,7 +577,11 @@ export default function SettingsPage() {
                   Automatically scan for new devices on enabled networks
                 </p>
               </div>
-              <Switch defaultChecked data-testid="switch-auto-discovery" />
+              <Switch
+                checked={autoDiscovery}
+                onCheckedChange={setAutoDiscovery}
+                data-testid="switch-auto-discovery"
+              />
             </div>
           </div>
         </CardContent>
@@ -617,7 +640,17 @@ export default function SettingsPage() {
         <Button variant="outline" data-testid="button-reset">
           Reset to Defaults
         </Button>
-        <Button data-testid="button-save-settings">Save Settings</Button>
+        <Button
+          data-testid="button-save-settings"
+          onClick={() => saveSettingsMutation.mutate({
+            networkRanges: networks,
+            vlans,
+            scanSettings: { interval: scanInterval, autoDiscovery }
+          })}
+          disabled={saveSettingsMutation.isPending}
+        >
+          {saveSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
+        </Button>
       </div>
 
       {/* NAS Form Dialog */}
@@ -627,18 +660,18 @@ export default function SettingsPage() {
         node={
           editingNas
             ? {
-                id: editingNas.id,
-                name: editingNas.name,
-                ip: editingNas.ip,
-                osType: editingNas.osType,
-                deviceType: editingNas.deviceType,
-                status: editingNas.status,
-                tags: editingNas.tags,
-                services: editingNas.services || undefined,
-                storageTotal: editingNas.storageTotal || undefined,
-                storageUsed: editingNas.storageUsed || undefined,
-                metadata: editingNas.metadata || undefined,
-              }
+              id: editingNas.id,
+              name: editingNas.name,
+              ip: editingNas.ip,
+              osType: editingNas.osType,
+              deviceType: editingNas.deviceType,
+              status: editingNas.status,
+              tags: editingNas.tags,
+              services: editingNas.services || undefined,
+              storageTotal: editingNas.storageTotal || undefined,
+              storageUsed: editingNas.storageUsed || undefined,
+              metadata: editingNas.metadata || undefined,
+            }
             : undefined
         }
         defaultDeviceType="nas"
