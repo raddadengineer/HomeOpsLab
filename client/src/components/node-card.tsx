@@ -1,9 +1,18 @@
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "./status-badge";
-import { ExternalLink, MoreVertical, Server, Router, Network, Wifi, HardDrive, Box } from "lucide-react";
-import type { Service, DeviceMetadata } from "@shared/schema";
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from './status-badge';
+import {
+  ExternalLink,
+  MoreVertical,
+  Server,
+  Router,
+  Network,
+  Wifi,
+  HardDrive,
+  Box,
+} from 'lucide-react';
+import type { Service, DeviceMetadata } from '@shared/schema';
 
 interface NodeCardProps {
   id: string;
@@ -11,7 +20,7 @@ interface NodeCardProps {
   ip: string;
   osType: string;
   deviceType?: string;
-  status: "online" | "offline" | "degraded" | "unknown";
+  status: 'online' | 'offline' | 'degraded' | 'unknown';
   tags?: string[];
   services?: Service[];
   storageTotal?: string;
@@ -23,57 +32,70 @@ interface NodeCardProps {
 
 const getDeviceIcon = (deviceType?: string) => {
   switch (deviceType) {
-    case 'router': return Router;
-    case 'switch': return Network;
-    case 'access-point': return Wifi;
-    case 'nas': return HardDrive;
-    case 'container': return Box;
-    default: return Server;
+    case 'router':
+      return Router;
+    case 'switch':
+      return Network;
+    case 'access-point':
+      return Wifi;
+    case 'nas':
+      return HardDrive;
+    case 'container':
+      return Box;
+    default:
+      return Server;
   }
 };
 
 const getDeviceLabel = (deviceType?: string) => {
   switch (deviceType) {
-    case 'router': return 'Router';
-    case 'switch': return 'Switch';
-    case 'access-point': return 'Access Point';
-    case 'nas': return 'NAS';
-    case 'container': return 'Container';
-    default: return 'Server';
+    case 'router':
+      return 'Router';
+    case 'switch':
+      return 'Switch';
+    case 'access-point':
+      return 'Access Point';
+    case 'nas':
+      return 'NAS';
+    case 'container':
+      return 'Container';
+    default:
+      return 'Server';
   }
 };
 
-export function NodeCard({ 
-  id, 
-  name, 
-  ip, 
-  osType, 
+export function NodeCard({
+  id,
+  name,
+  ip,
+  osType,
   deviceType,
-  status, 
-  tags = [], 
+  status,
+  tags = [],
   services = [],
   storageTotal,
   storageUsed,
   metadata,
   onClick,
-  onEdit
+  onEdit,
 }: NodeCardProps) {
   const DeviceIcon = getDeviceIcon(deviceType);
   const deviceLabel = getDeviceLabel(deviceType);
-  
+
   // Safely calculate storage percentage with NaN handling
-  const storagePercent = storageTotal && storageUsed 
-    ? (() => {
-        const total = parseFloat(storageTotal);
-        const used = parseFloat(storageUsed);
-        if (isNaN(total) || isNaN(used) || total <= 0) return null;
-        return Math.round((used / total) * 100);
-      })()
-    : null;
+  const storagePercent =
+    storageTotal && storageUsed
+      ? (() => {
+          const total = parseFloat(storageTotal);
+          const used = parseFloat(storageUsed);
+          if (isNaN(total) || isNaN(used) || total <= 0) return null;
+          return Math.round((used / total) * 100);
+        })()
+      : null;
 
   return (
-    <Card 
-      className="hover-elevate cursor-pointer transition-all duration-200 group" 
+    <Card
+      className="hover-elevate cursor-pointer transition-all duration-200 group"
       onClick={onClick}
       data-testid={`card-node-${id}`}
     >
@@ -84,15 +106,17 @@ export function NodeCard({
               <DeviceIcon className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-base truncate" data-testid={`text-node-name-${id}`}>{name}</h3>
+              <h3 className="font-semibold text-base truncate" data-testid={`text-node-name-${id}`}>
+                {name}
+              </h3>
               <p className="text-sm text-muted-foreground font-mono mt-0.5">{ip}</p>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="flex-shrink-0"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               onEdit?.();
             }}
@@ -105,17 +129,23 @@ export function NodeCard({
       <CardContent className="pb-3">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           <StatusBadge status={status} />
-          <Badge variant="outline" className="text-xs">{deviceLabel}</Badge>
-          <Badge variant="outline" className="text-xs">{osType}</Badge>
+          <Badge variant="outline" className="text-xs">
+            {deviceLabel}
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            {osType}
+          </Badge>
         </div>
         {deviceType === 'nas' && storageTotal && storageUsed && storagePercent !== null && (
           <div className="mt-2 p-2 rounded-md bg-muted/50">
             <div className="flex justify-between text-xs mb-1">
               <span className="text-muted-foreground">Storage</span>
-              <span className="font-mono">{storageUsed}/{storageTotal} GB ({storagePercent}%)</span>
+              <span className="font-mono">
+                {storageUsed}/{storageTotal} GB ({storagePercent}%)
+              </span>
             </div>
             <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-primary transition-all duration-300"
                 style={{ width: `${storagePercent}%` }}
               />
@@ -124,14 +154,14 @@ export function NodeCard({
         )}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
-            {tags.map((tag) => (
+            {tags.map(tag => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>
             ))}
           </div>
         )}
-        
+
         {/* Device-specific metadata display */}
         {metadata && (
           <div className="mt-2 space-y-1">
@@ -156,7 +186,12 @@ export function NodeCard({
                 {metadata.portCount && (
                   <div className="text-xs flex justify-between">
                     <span className="text-muted-foreground">Ports:</span>
-                    <span>{metadata.portCount} {'managementType' in metadata && metadata.managementType ? `(${metadata.managementType})` : ''}</span>
+                    <span>
+                      {metadata.portCount}{' '}
+                      {'managementType' in metadata && metadata.managementType
+                        ? `(${metadata.managementType})`
+                        : ''}
+                    </span>
                   </div>
                 )}
               </>
@@ -194,7 +229,9 @@ export function NodeCard({
                 {metadata.image && (
                   <div className="text-xs flex justify-between">
                     <span className="text-muted-foreground">Image:</span>
-                    <span className="font-mono text-xs truncate max-w-[180px]">{metadata.image}</span>
+                    <span className="font-mono text-xs truncate max-w-[180px]">
+                      {metadata.image}
+                    </span>
                   </div>
                 )}
               </>
@@ -226,9 +263,9 @@ export function NodeCard({
           </div>
           <div className="w-full flex flex-wrap gap-1.5">
             {services.map((service, index) => (
-              <Badge 
-                key={index} 
-                variant="outline" 
+              <Badge
+                key={index}
+                variant="outline"
                 className="text-xs"
                 data-testid={`badge-service-${id}-${index}`}
               >

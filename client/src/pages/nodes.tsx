@@ -1,12 +1,12 @@
-import { NodeCard } from "@/components/node-card";
-import { NodeDetailPanel } from "@/components/node-detail-panel";
-import { NodeFormDialog } from "@/components/node-form-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import type { Node } from "@shared/schema";
+import { NodeCard } from '@/components/node-card';
+import { NodeDetailPanel } from '@/components/node-detail-panel';
+import { NodeFormDialog } from '@/components/node-form-dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Plus, Search } from 'lucide-react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import type { Node } from '@shared/schema';
 
 export default function NodesPage() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -18,17 +18,20 @@ export default function NodesPage() {
     queryKey: ['/api/nodes'],
   });
 
-  const filteredNodes = nodes.filter(node => 
-    node.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    node.ip.includes(searchQuery) ||
-    node.osType.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredNodes = nodes.filter(
+    node =>
+      node.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      node.ip.includes(searchQuery) ||
+      node.osType.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">Nodes</h1>
+          <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">
+            Nodes
+          </h1>
           <p className="text-lg text-muted-foreground mt-2">Manage all infrastructure nodes</p>
         </div>
         <Button onClick={() => setShowAddDialog(true)} data-testid="button-add-node">
@@ -43,7 +46,7 @@ export default function NodesPage() {
           placeholder="Search nodes..."
           className="pl-9"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           data-testid="input-search-nodes"
         />
       </div>
@@ -55,7 +58,7 @@ export default function NodesPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredNodes.map((node) => (
+            {filteredNodes.map(node => (
               <NodeCard
                 key={node.id}
                 id={node.id}
@@ -63,12 +66,12 @@ export default function NodesPage() {
                 ip={node.ip}
                 osType={node.osType}
                 deviceType={node.deviceType}
-                status={node.status as "online" | "offline" | "degraded" | "unknown"}
+                status={node.status as 'online' | 'offline' | 'degraded' | 'unknown'}
                 tags={node.tags}
                 services={node.services}
                 storageTotal={node.storageTotal || undefined}
                 storageUsed={node.storageUsed || undefined}
-                metadata={node.metadata}
+                metadata={node.metadata || undefined}
                 onClick={() => setSelectedNode(node)}
                 onEdit={() => setEditingNode(node)}
               />
@@ -92,44 +95,51 @@ export default function NodesPage() {
             setSelectedNode(null);
           }
         }}
-        node={selectedNode ? {
-          id: selectedNode.id,
-          name: selectedNode.name,
-          ip: selectedNode.ip,
-          osType: selectedNode.osType,
-          deviceType: selectedNode.deviceType,
-          status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
-          tags: selectedNode.tags,
-          services: selectedNode.services,
-          storageTotal: selectedNode.storageTotal || undefined,
-          storageUsed: selectedNode.storageUsed || undefined,
-          metadata: selectedNode.metadata,
-          uptime: selectedNode.uptime || undefined,
-          lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
-        } : undefined}
+        node={
+          selectedNode
+            ? {
+                id: selectedNode.id,
+                name: selectedNode.name,
+                ip: selectedNode.ip,
+                osType: selectedNode.osType,
+                deviceType: selectedNode.deviceType,
+                status: selectedNode.status as 'online' | 'offline' | 'degraded' | 'unknown',
+                tags: selectedNode.tags,
+                services: selectedNode.services,
+                storageTotal: selectedNode.storageTotal || undefined,
+                storageUsed: selectedNode.storageUsed || undefined,
+                metadata: selectedNode.metadata || undefined,
+                uptime: selectedNode.uptime || undefined,
+                lastSeen: selectedNode.lastSeen
+                  ? new Date(selectedNode.lastSeen).toLocaleString()
+                  : undefined,
+              }
+            : undefined
+        }
       />
 
-      <NodeFormDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-      />
+      <NodeFormDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
 
       <NodeFormDialog
         open={!!editingNode}
-        onOpenChange={(open) => !open && setEditingNode(null)}
-        node={editingNode ? {
-          id: editingNode.id,
-          name: editingNode.name,
-          ip: editingNode.ip,
-          osType: editingNode.osType,
-          deviceType: editingNode.deviceType,
-          status: editingNode.status,
-          tags: editingNode.tags,
-          services: editingNode.services,
-          storageTotal: editingNode.storageTotal || undefined,
-          storageUsed: editingNode.storageUsed || undefined,
-          metadata: editingNode.metadata,
-        } : undefined}
+        onOpenChange={open => !open && setEditingNode(null)}
+        node={
+          editingNode
+            ? {
+                id: editingNode.id,
+                name: editingNode.name,
+                ip: editingNode.ip,
+                osType: editingNode.osType,
+                deviceType: editingNode.deviceType,
+                status: editingNode.status,
+                tags: editingNode.tags,
+                services: editingNode.services,
+                storageTotal: editingNode.storageTotal || undefined,
+                storageUsed: editingNode.storageUsed || undefined,
+                metadata: editingNode.metadata || undefined,
+              }
+            : undefined
+        }
       />
     </div>
   );

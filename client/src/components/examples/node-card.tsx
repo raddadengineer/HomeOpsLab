@@ -9,8 +9,8 @@ export default function NodeCardExample() {
         ip="192.168.1.10"
         osType="Proxmox VE"
         status="online"
-        tags={["virtual", "hypervisor"]}
-        serviceUrl="https://proxmox.local"
+        tags={['virtual', 'hypervisor']}
+        services={[{ name: 'HTTPS', url: 'https://proxmox.local' }]}
         onClick={() => console.log('Node clicked')}
       />
       <NodeCard
@@ -19,7 +19,7 @@ export default function NodeCardExample() {
         ip="192.168.1.20"
         osType="TrueNAS Core"
         status="online"
-        tags={["storage", "NAS"]}
+        tags={['storage', 'NAS']}
         onClick={() => console.log('Node clicked')}
       />
       <NodeCard
@@ -28,7 +28,7 @@ export default function NodeCardExample() {
         ip="192.168.1.30"
         osType="Ubuntu Server"
         status="offline"
-        tags={["container", "docker"]}
+        tags={['container', 'docker']}
         onClick={() => console.log('Node clicked')}
       />
     </div>

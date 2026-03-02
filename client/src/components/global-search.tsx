@@ -1,6 +1,6 @@
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useState, useEffect } from 'react';
 import {
   CommandDialog,
   CommandEmpty,
@@ -8,36 +8,32 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 
 export function GlobalSearch() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen(open => !open);
       }
     };
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
   }, []);
 
   return (
     <>
-      <div 
+      <div
         className="relative flex-1 max-w-md cursor-pointer"
         onClick={() => setOpen(true)}
         data-testid="button-search"
       >
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search nodes... (⌘K)"
-          className="pl-9 cursor-pointer"
-          readOnly
-        />
+        <Input placeholder="Search nodes... (⌘K)" className="pl-9 cursor-pointer" readOnly />
       </div>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Search nodes, services, and more..." />

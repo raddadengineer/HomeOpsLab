@@ -49,6 +49,7 @@ docker-compose up -d
 ```
 
 This will:
+
 - Pull the PostgreSQL image
 - Build the HomeOps Lab application
 - Start both containers
@@ -127,6 +128,7 @@ For production deployments, consider these additional steps:
 ### 1. Use a Reverse Proxy
 
 Place HomeOps Lab behind a reverse proxy like Nginx or Traefik for:
+
 - HTTPS/SSL termination
 - Custom domain support
 - Additional security headers
@@ -195,6 +197,7 @@ Set up automated backups using cron:
 ### Container Won't Start
 
 Check logs:
+
 ```bash
 docker-compose logs app
 ```
@@ -202,6 +205,7 @@ docker-compose logs app
 ### Database Connection Issues
 
 Verify database is healthy:
+
 ```bash
 docker-compose ps
 docker-compose exec db pg_isready -U homeops
@@ -210,9 +214,10 @@ docker-compose exec db pg_isready -U homeops
 ### Port Already in Use
 
 Change ports in `docker-compose.yml`:
+
 ```yaml
 ports:
-  - "8080:5000"  # Use port 8080 instead
+  - '8080:5000' # Use port 8080 instead
 ```
 
 ### Reset Everything
@@ -233,6 +238,7 @@ For advanced networking (custom bridge networks, multiple stacks), refer to the 
 ## Support
 
 For issues and questions:
+
 - Check the logs: `docker-compose logs -f`
 - Review the application logs inside the container
 - Ensure all environment variables are correctly set

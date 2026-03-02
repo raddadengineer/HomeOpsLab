@@ -1,5 +1,5 @@
-import { Network, LayoutDashboard, Server, Radar, Settings, Search } from "lucide-react";
-import { Link, useLocation } from "wouter";
+import { Network, LayoutDashboard, Server, Radar, Settings, Search } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
 import {
   Sidebar,
   SidebarContent,
@@ -9,32 +9,32 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 
 const menuItems = [
   {
-    title: "Dashboard",
-    url: "/",
+    title: 'Dashboard',
+    url: '/',
     icon: LayoutDashboard,
   },
   {
-    title: "Network Map",
-    url: "/network",
+    title: 'Network Map',
+    url: '/network',
     icon: Network,
   },
   {
-    title: "Nodes",
-    url: "/nodes",
+    title: 'Nodes',
+    url: '/nodes',
     icon: Server,
   },
   {
-    title: "Discovery",
-    url: "/discovery",
+    title: 'Discovery',
+    url: '/discovery',
     icon: Radar,
   },
   {
-    title: "Settings",
-    url: "/settings",
+    title: 'Settings',
+    url: '/settings',
     icon: Settings,
   },
 ];
@@ -51,10 +51,10 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {menuItems.map(item => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
+                  <SidebarMenuButton
+                    asChild
                     isActive={location === item.url}
                     data-testid={`link-${item.title.toLowerCase().replace(' ', '-')}`}
                   >

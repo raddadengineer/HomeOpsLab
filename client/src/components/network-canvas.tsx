@@ -24,8 +24,8 @@ const defaultNodes: Node[] = [
     type: 'default',
     position: { x: 250, y: 100 },
     data: { label: 'Proxmox Server' },
-    style: { 
-      background: 'hsl(var(--card))', 
+    style: {
+      background: 'hsl(var(--card))',
       border: '2px solid hsl(var(--primary))',
       borderRadius: '8px',
       padding: '12px',
@@ -36,8 +36,8 @@ const defaultNodes: Node[] = [
     id: '2',
     position: { x: 100, y: 250 },
     data: { label: 'TrueNAS' },
-    style: { 
-      background: 'hsl(var(--card))', 
+    style: {
+      background: 'hsl(var(--card))',
       border: '2px solid hsl(var(--card-border))',
       borderRadius: '8px',
       padding: '12px',
@@ -48,8 +48,8 @@ const defaultNodes: Node[] = [
     id: '3',
     position: { x: 400, y: 250 },
     data: { label: 'Docker Host' },
-    style: { 
-      background: 'hsl(var(--card))', 
+    style: {
+      background: 'hsl(var(--card))',
       border: '2px solid hsl(var(--card-border))',
       borderRadius: '8px',
       padding: '12px',
@@ -59,21 +59,33 @@ const defaultNodes: Node[] = [
 ];
 
 const defaultEdges: Edge[] = [
-  { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: 'hsl(var(--primary))' } },
-  { id: 'e1-3', source: '1', target: '3', animated: true, style: { stroke: 'hsl(var(--primary))' } },
+  {
+    id: 'e1-2',
+    source: '1',
+    target: '2',
+    animated: true,
+    style: { stroke: 'hsl(var(--primary))' },
+  },
+  {
+    id: 'e1-3',
+    source: '1',
+    target: '3',
+    animated: true,
+    style: { stroke: 'hsl(var(--primary))' },
+  },
 ];
 
-export function NetworkCanvas({ 
-  initialNodes = defaultNodes, 
+export function NetworkCanvas({
+  initialNodes = defaultNodes,
   initialEdges = defaultEdges,
-  onNodeClick 
+  onNodeClick,
 }: NetworkCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
+    (params: Connection) => setEdges(eds => addEdge(params, eds)),
+    [setEdges]
   );
 
   return (
@@ -89,10 +101,7 @@ export function NetworkCanvas({
       >
         <Background color="hsl(var(--border))" gap={16} />
         <Controls className="bg-card border border-border" />
-        <MiniMap 
-          className="bg-card border border-border" 
-          nodeColor="hsl(var(--primary))"
-        />
+        <MiniMap className="bg-card border border-border" nodeColor="hsl(var(--primary))" />
       </ReactFlow>
     </div>
   );

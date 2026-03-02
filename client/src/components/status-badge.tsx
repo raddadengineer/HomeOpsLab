@@ -1,6 +1,6 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 
-type StatusType = "online" | "offline" | "degraded" | "unknown";
+type StatusType = 'online' | 'offline' | 'degraded' | 'unknown';
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -9,33 +9,33 @@ interface StatusBadgeProps {
 
 const statusConfig = {
   online: {
-    label: "Online",
-    className: "bg-green-500/20 text-green-400 border-green-500/50",
-    dotClass: "animate-pulse",
+    label: 'Online',
+    className: 'bg-green-500/20 text-green-400 border-green-500/50',
+    dotClass: 'animate-pulse',
   },
   offline: {
-    label: "Offline",
-    className: "bg-red-500/20 text-red-400 border-red-500/50",
-    dotClass: "",
+    label: 'Offline',
+    className: 'bg-red-500/20 text-red-400 border-red-500/50',
+    dotClass: '',
   },
   degraded: {
-    label: "Degraded",
-    className: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50",
-    dotClass: "animate-pulse",
+    label: 'Degraded',
+    className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
+    dotClass: 'animate-pulse',
   },
   unknown: {
-    label: "Unknown",
-    className: "bg-gray-500/20 text-gray-400 border-gray-500/50",
-    dotClass: "",
+    label: 'Unknown',
+    className: 'bg-gray-500/20 text-gray-400 border-gray-500/50',
+    dotClass: '',
   },
 };
 
-export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
+export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
   const config = statusConfig[status];
-  
+
   return (
-    <Badge 
-      variant="outline" 
+    <Badge
+      variant="outline"
       className={`${config.className} ${className} font-medium`}
       data-testid={`badge-status-${status}`}
     >

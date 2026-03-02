@@ -1,18 +1,18 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { HardDrive, Plus, Pencil, Trash2, Network, Wifi } from "lucide-react";
-import { useState } from "react";
-import { NodeFormDialog } from "@/components/node-form-dialog";
-import type { Node } from "@shared/schema";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { HardDrive, Plus, Pencil, Trash2, Network, Wifi } from 'lucide-react';
+import { useState } from 'react';
+import { NodeFormDialog } from '@/components/node-form-dialog';
+import type { Node } from '@shared/schema';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface NetworkRange {
   id: string;
@@ -51,7 +51,14 @@ export default function SettingsPage() {
     { id: '1', name: 'Main LAN', cidr: '192.168.1.0/24', enabled: true },
   ]);
   const [vlans, setVlans] = useState<Vlan[]>([
-    { id: '1', name: 'Management', vlanId: 10, cidr: '10.0.10.0/24', description: 'Network management devices', enabled: true },
+    {
+      id: '1',
+      name: 'Management',
+      vlanId: 10,
+      cidr: '10.0.10.0/24',
+      description: 'Network management devices',
+      enabled: true,
+    },
   ]);
   const [newNetworkCidr, setNewNetworkCidr] = useState('');
   const [newNetworkName, setNewNetworkName] = useState('');
@@ -62,52 +69,64 @@ export default function SettingsPage() {
 
   const addNetwork = () => {
     if (newNetworkCidr && newNetworkName) {
-      setNetworks([...networks, {
-        id: Date.now().toString(),
-        name: newNetworkName,
-        cidr: newNetworkCidr,
-        enabled: true,
-      }]);
+      setNetworks([
+        ...networks,
+        {
+          id: Date.now().toString(),
+          name: newNetworkName,
+          cidr: newNetworkCidr,
+          enabled: true,
+        },
+      ]);
       setNewNetworkCidr('');
       setNewNetworkName('');
-      toast({ title: "Network Added", description: `${newNetworkName} has been added to scan list` });
+      toast({
+        title: 'Network Added',
+        description: `${newNetworkName} has been added to scan list`,
+      });
     }
   };
 
   const removeNetwork = (id: string) => {
     setNetworks(networks.filter(n => n.id !== id));
-    toast({ title: "Network Removed", description: "Network has been removed from scan list" });
+    toast({ title: 'Network Removed', description: 'Network has been removed from scan list' });
   };
 
   const toggleNetwork = (id: string) => {
-    setNetworks(networks.map(n => n.id === id ? { ...n, enabled: !n.enabled } : n));
+    setNetworks(networks.map(n => (n.id === id ? { ...n, enabled: !n.enabled } : n)));
   };
 
   const addVlan = () => {
     if (newVlanName && newVlanId && newVlanCidr) {
-      setVlans([...vlans, {
-        id: Date.now().toString(),
-        name: newVlanName,
-        vlanId: parseInt(newVlanId),
-        cidr: newVlanCidr,
-        description: newVlanDesc,
-        enabled: true,
-      }]);
+      setVlans([
+        ...vlans,
+        {
+          id: Date.now().toString(),
+          name: newVlanName,
+          vlanId: parseInt(newVlanId),
+          cidr: newVlanCidr,
+          description: newVlanDesc,
+          enabled: true,
+        },
+      ]);
       setNewVlanName('');
       setNewVlanId('');
       setNewVlanCidr('');
       setNewVlanDesc('');
-      toast({ title: "VLAN Added", description: `VLAN ${newVlanId} (${newVlanName}) has been added` });
+      toast({
+        title: 'VLAN Added',
+        description: `VLAN ${newVlanId} (${newVlanName}) has been added`,
+      });
     }
   };
 
   const removeVlan = (id: string) => {
     setVlans(vlans.filter(v => v.id !== id));
-    toast({ title: "VLAN Removed", description: "VLAN has been removed from configuration" });
+    toast({ title: 'VLAN Removed', description: 'VLAN has been removed from configuration' });
   };
 
   const toggleVlan = (id: string) => {
-    setVlans(vlans.map(v => v.id === id ? { ...v, enabled: !v.enabled } : v));
+    setVlans(vlans.map(v => (v.id === id ? { ...v, enabled: !v.enabled } : v)));
   };
 
   const { data: nodes = [], isLoading } = useQuery<Node[]>({
@@ -138,21 +157,21 @@ export default function SettingsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/nodes/${id}`);
+      await apiRequest('DELETE', `/api/nodes/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/nodes'] });
       toast({
-        title: "NAS Removed",
-        description: "The NAS device has been removed from your storage configuration",
+        title: 'NAS Removed',
+        description: 'The NAS device has been removed from your storage configuration',
       });
       setDeleteNasId(null);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to remove NAS device",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to remove NAS device',
+        variant: 'destructive',
       });
     },
   });
@@ -170,7 +189,9 @@ export default function SettingsPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">Settings</h1>
+        <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">
+          Settings
+        </h1>
         <p className="text-lg text-muted-foreground mt-2">Configure your HomeOps Lab instance</p>
       </div>
 
@@ -198,15 +219,27 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Total Storage Capacity</span>
               <span className="text-lg font-bold" data-testid="text-total-storage">
-                {totalStorage > 0 ? `${formatStorage(usedStorage)} / ${formatStorage(totalStorage)}` : 'No NAS configured'}
+                {totalStorage > 0
+                  ? `${formatStorage(usedStorage)} / ${formatStorage(totalStorage)}`
+                  : 'No NAS configured'}
               </span>
             </div>
             {totalStorage > 0 && (
               <>
                 <Progress value={storagePercent} className="h-3" data-testid="progress-storage" />
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{nasDevices.length} NAS device{nasDevices.length !== 1 ? 's' : ''}</span>
-                  <span className={storagePercent > 80 ? 'text-red-400' : storagePercent > 60 ? 'text-yellow-400' : 'text-green-400'}>
+                  <span>
+                    {nasDevices.length} NAS device{nasDevices.length !== 1 ? 's' : ''}
+                  </span>
+                  <span
+                    className={
+                      storagePercent > 80
+                        ? 'text-red-400'
+                        : storagePercent > 60
+                          ? 'text-yellow-400'
+                          : 'text-green-400'
+                    }
+                  >
                     {storagePercent}% used
                   </span>
                 </div>
@@ -221,19 +254,21 @@ export default function SettingsPage() {
             <div className="text-center py-8 border border-dashed rounded-lg">
               <HardDrive className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
               <p className="text-muted-foreground">No NAS devices configured</p>
-              <p className="text-sm text-muted-foreground/70 mt-1">Add a NAS to start tracking your storage</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">
+                Add a NAS to start tracking your storage
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               <Label className="text-sm font-medium">NAS Devices</Label>
-              {nasDevices.map((nas) => {
+              {nasDevices.map(nas => {
                 const nasTotal = parseFloat(nas.storageTotal || '0');
                 const nasUsed = parseFloat(nas.storageUsed || '0');
                 const nasPercent = nasTotal > 0 ? Math.round((nasUsed / nasTotal) * 100) : 0;
-                
+
                 return (
-                  <div 
-                    key={nas.id} 
+                  <div
+                    key={nas.id}
                     className="flex items-center gap-4 p-4 rounded-lg border bg-card hover-elevate transition-all"
                     data-testid={`card-nas-${nas.id}`}
                   >
@@ -242,9 +277,16 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium truncate" data-testid={`text-nas-name-${nas.id}`}>{nas.name}</span>
-                        <Badge variant="outline" className="text-xs">{nas.ip}</Badge>
-                        <Badge 
+                        <span
+                          className="font-medium truncate"
+                          data-testid={`text-nas-name-${nas.id}`}
+                        >
+                          {nas.name}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {nas.ip}
+                        </Badge>
+                        <Badge
                           variant={nas.status === 'online' ? 'default' : 'secondary'}
                           className={`text-xs ${nas.status === 'online' ? 'bg-green-500/20 text-green-400' : ''}`}
                         >
@@ -256,21 +298,23 @@ export default function SettingsPage() {
                           <Progress value={nasPercent} className="h-2" />
                         </div>
                         <span className="text-sm text-muted-foreground whitespace-nowrap">
-                          {nasTotal > 0 ? `${formatStorage(nasUsed)} / ${formatStorage(nasTotal)}` : 'No storage data'}
+                          {nasTotal > 0
+                            ? `${formatStorage(nasUsed)} / ${formatStorage(nasTotal)}`
+                            : 'No storage data'}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleEditNas(nas)}
                         data-testid={`button-edit-nas-${nas.id}`}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         onClick={() => setDeleteNasId(nas.id)}
                         data-testid={`button-delete-nas-${nas.id}`}
@@ -305,28 +349,30 @@ export default function SettingsPage() {
               <Label className="text-base font-medium">Network Ranges</Label>
               <Badge variant="outline">{networks.filter(n => n.enabled).length} active</Badge>
             </div>
-            
+
             {/* Existing Networks */}
             <div className="space-y-2">
-              {networks.map((network) => (
-                <div 
-                  key={network.id} 
+              {networks.map(network => (
+                <div
+                  key={network.id}
                   className={`flex items-center gap-3 p-3 rounded-lg border ${network.enabled ? 'bg-card' : 'bg-muted/50 opacity-60'}`}
                   data-testid={`network-range-${network.id}`}
                 >
-                  <Switch 
-                    checked={network.enabled} 
+                  <Switch
+                    checked={network.enabled}
                     onCheckedChange={() => toggleNetwork(network.id)}
                     data-testid={`switch-network-${network.id}`}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{network.name}</span>
-                      <Badge variant="secondary" className="font-mono text-xs">{network.cidr}</Badge>
+                      <Badge variant="secondary" className="font-mono text-xs">
+                        {network.cidr}
+                      </Badge>
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => removeNetwork(network.id)}
                     data-testid={`button-remove-network-${network.id}`}
@@ -340,22 +386,26 @@ export default function SettingsPage() {
             {/* Add New Network */}
             <div className="flex gap-2 items-end">
               <div className="flex-1 space-y-1">
-                <Label htmlFor="new-network-name" className="text-xs text-muted-foreground">Name</Label>
-                <Input 
+                <Label htmlFor="new-network-name" className="text-xs text-muted-foreground">
+                  Name
+                </Label>
+                <Input
                   id="new-network-name"
                   placeholder="e.g. Guest Network"
                   value={newNetworkName}
-                  onChange={(e) => setNewNetworkName(e.target.value)}
+                  onChange={e => setNewNetworkName(e.target.value)}
                   data-testid="input-new-network-name"
                 />
               </div>
               <div className="flex-1 space-y-1">
-                <Label htmlFor="new-network-cidr" className="text-xs text-muted-foreground">CIDR Range</Label>
-                <Input 
+                <Label htmlFor="new-network-cidr" className="text-xs text-muted-foreground">
+                  CIDR Range
+                </Label>
+                <Input
                   id="new-network-cidr"
                   placeholder="e.g. 192.168.2.0/24"
                   value={newNetworkCidr}
-                  onChange={(e) => setNewNetworkCidr(e.target.value)}
+                  onChange={e => setNewNetworkCidr(e.target.value)}
                   data-testid="input-new-network-cidr"
                 />
               </div>
@@ -377,7 +427,7 @@ export default function SettingsPage() {
               </div>
               <Badge variant="outline">{vlans.filter(v => v.enabled).length} active</Badge>
             </div>
-            
+
             {/* Existing VLANs */}
             <div className="space-y-2">
               {vlans.length === 0 ? (
@@ -385,14 +435,14 @@ export default function SettingsPage() {
                   No VLANs configured
                 </div>
               ) : (
-                vlans.map((vlan) => (
-                  <div 
-                    key={vlan.id} 
+                vlans.map(vlan => (
+                  <div
+                    key={vlan.id}
                     className={`flex items-center gap-3 p-3 rounded-lg border ${vlan.enabled ? 'bg-card' : 'bg-muted/50 opacity-60'}`}
                     data-testid={`vlan-${vlan.id}`}
                   >
-                    <Switch 
-                      checked={vlan.enabled} 
+                    <Switch
+                      checked={vlan.enabled}
                       onCheckedChange={() => toggleVlan(vlan.id)}
                       data-testid={`switch-vlan-${vlan.id}`}
                     />
@@ -402,14 +452,16 @@ export default function SettingsPage() {
                           VLAN {vlan.vlanId}
                         </Badge>
                         <span className="font-medium">{vlan.name}</span>
-                        <Badge variant="secondary" className="font-mono text-xs">{vlan.cidr}</Badge>
+                        <Badge variant="secondary" className="font-mono text-xs">
+                          {vlan.cidr}
+                        </Badge>
                       </div>
                       {vlan.description && (
                         <p className="text-xs text-muted-foreground mt-1">{vlan.description}</p>
                       )}
                     </div>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => removeVlan(vlan.id)}
                       data-testid={`button-remove-vlan-${vlan.id}`}
@@ -425,43 +477,51 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <div className="grid grid-cols-4 gap-2">
                 <div className="space-y-1">
-                  <Label htmlFor="new-vlan-id" className="text-xs text-muted-foreground">VLAN ID</Label>
-                  <Input 
+                  <Label htmlFor="new-vlan-id" className="text-xs text-muted-foreground">
+                    VLAN ID
+                  </Label>
+                  <Input
                     id="new-vlan-id"
                     type="number"
                     placeholder="e.g. 20"
                     value={newVlanId}
-                    onChange={(e) => setNewVlanId(e.target.value)}
+                    onChange={e => setNewVlanId(e.target.value)}
                     data-testid="input-new-vlan-id"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="new-vlan-name" className="text-xs text-muted-foreground">Name</Label>
-                  <Input 
+                  <Label htmlFor="new-vlan-name" className="text-xs text-muted-foreground">
+                    Name
+                  </Label>
+                  <Input
                     id="new-vlan-name"
                     placeholder="e.g. IoT"
                     value={newVlanName}
-                    onChange={(e) => setNewVlanName(e.target.value)}
+                    onChange={e => setNewVlanName(e.target.value)}
                     data-testid="input-new-vlan-name"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="new-vlan-cidr" className="text-xs text-muted-foreground">CIDR</Label>
-                  <Input 
+                  <Label htmlFor="new-vlan-cidr" className="text-xs text-muted-foreground">
+                    CIDR
+                  </Label>
+                  <Input
                     id="new-vlan-cidr"
                     placeholder="e.g. 10.0.20.0/24"
                     value={newVlanCidr}
-                    onChange={(e) => setNewVlanCidr(e.target.value)}
+                    onChange={e => setNewVlanCidr(e.target.value)}
                     data-testid="input-new-vlan-cidr"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="new-vlan-desc" className="text-xs text-muted-foreground">Description</Label>
-                  <Input 
+                  <Label htmlFor="new-vlan-desc" className="text-xs text-muted-foreground">
+                    Description
+                  </Label>
+                  <Input
                     id="new-vlan-desc"
                     placeholder="Optional"
                     value={newVlanDesc}
-                    onChange={(e) => setNewVlanDesc(e.target.value)}
+                    onChange={e => setNewVlanDesc(e.target.value)}
                     data-testid="input-new-vlan-desc"
                   />
                 </div>
@@ -479,11 +539,13 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <Label className="text-base font-medium">Scan Settings</Label>
             <div className="space-y-2">
-              <Label htmlFor="scan-interval" className="text-sm text-muted-foreground">Scan Interval (minutes)</Label>
-              <Input 
-                id="scan-interval" 
-                type="number" 
-                placeholder="60" 
+              <Label htmlFor="scan-interval" className="text-sm text-muted-foreground">
+                Scan Interval (minutes)
+              </Label>
+              <Input
+                id="scan-interval"
+                type="number"
+                placeholder="60"
                 defaultValue="60"
                 className="max-w-32"
                 data-testid="input-scan-interval"
@@ -492,7 +554,9 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Auto Discovery</Label>
-                <p className="text-sm text-muted-foreground">Automatically scan for new devices on enabled networks</p>
+                <p className="text-sm text-muted-foreground">
+                  Automatically scan for new devices on enabled networks
+                </p>
               </div>
               <Switch defaultChecked data-testid="switch-auto-discovery" />
             </div>
@@ -508,10 +572,10 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="check-interval">Health Check Interval (seconds)</Label>
-            <Input 
-              id="check-interval" 
-              type="number" 
-              placeholder="30" 
+            <Input
+              id="check-interval"
+              type="number"
+              placeholder="30"
               defaultValue="30"
               data-testid="input-check-interval"
             />
@@ -550,7 +614,9 @@ export default function SettingsPage() {
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button variant="outline" data-testid="button-reset">Reset to Defaults</Button>
+        <Button variant="outline" data-testid="button-reset">
+          Reset to Defaults
+        </Button>
         <Button data-testid="button-save-settings">Save Settings</Button>
       </div>
 
@@ -558,19 +624,23 @@ export default function SettingsPage() {
       <NodeFormDialog
         open={nasDialogOpen}
         onOpenChange={setNasDialogOpen}
-        node={editingNas ? {
-          id: editingNas.id,
-          name: editingNas.name,
-          ip: editingNas.ip,
-          osType: editingNas.osType,
-          deviceType: editingNas.deviceType,
-          status: editingNas.status,
-          tags: editingNas.tags,
-          services: editingNas.services || undefined,
-          storageTotal: editingNas.storageTotal || undefined,
-          storageUsed: editingNas.storageUsed || undefined,
-          metadata: editingNas.metadata || undefined,
-        } : undefined}
+        node={
+          editingNas
+            ? {
+                id: editingNas.id,
+                name: editingNas.name,
+                ip: editingNas.ip,
+                osType: editingNas.osType,
+                deviceType: editingNas.deviceType,
+                status: editingNas.status,
+                tags: editingNas.tags,
+                services: editingNas.services || undefined,
+                storageTotal: editingNas.storageTotal || undefined,
+                storageUsed: editingNas.storageUsed || undefined,
+                metadata: editingNas.metadata || undefined,
+              }
+            : undefined
+        }
         defaultDeviceType="nas"
       />
 
@@ -580,13 +650,13 @@ export default function SettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove NAS Device</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove this NAS device? This will remove it from your storage tracking.
-              The device itself will not be affected.
+              Are you sure you want to remove this NAS device? This will remove it from your storage
+              tracking. The device itself will not be affected.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => deleteNasId && deleteMutation.mutate(deleteNasId)}
               className="bg-red-500 hover:bg-red-600"
               data-testid="button-confirm-delete"

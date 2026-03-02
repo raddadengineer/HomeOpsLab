@@ -1,7 +1,7 @@
-import { type Node, type InsertNode, type Edge, type InsertEdge } from "@shared/schema";
-import { db } from "./db";
-import { nodes, edges } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { type Node, type InsertNode, type Edge, type InsertEdge } from '@shared/schema';
+import { db } from './db';
+import { nodes, edges } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 export interface IStorage {
   // Node operations
@@ -10,7 +10,7 @@ export interface IStorage {
   createNode(node: InsertNode): Promise<Node>;
   updateNode(id: string, node: Partial<InsertNode>): Promise<Node | undefined>;
   deleteNode(id: string): Promise<void>;
-  
+
   // Edge operations
   getAllEdges(): Promise<Edge[]>;
   getEdge(id: string): Promise<Edge | undefined>;

@@ -5,12 +5,14 @@ A self-hosted network visualization and monitoring platform for home lab enthusi
 ## Features
 
 ### Interactive Network Map
+
 - **Drag-and-drop topology editor** using React Flow
 - Visual connections between nodes showing network relationships
 - Real-time status indicators (online, offline, degraded)
 - Custom node positioning that persists to database
 
 ### Device Management
+
 - Support for multiple device types:
   - Servers
   - Routers
@@ -23,12 +25,14 @@ A self-hosted network visualization and monitoring platform for home lab enthusi
 - Tags for organization and filtering
 
 ### Storage Monitoring
+
 - Aggregate storage view across all NAS devices
 - Individual device capacity tracking
 - Visual progress bars with color-coded usage indicators
 - Quick "Add NAS" action from Storage Settings
 
 ### Network Configuration
+
 - Multiple network range support
 - VLAN management with ID, name, CIDR, and descriptions
 - Toggle individual networks/VLANs on/off
@@ -36,12 +40,14 @@ A self-hosted network visualization and monitoring platform for home lab enthusi
 - Auto-discovery settings
 
 ### Dashboard
+
 - System health overview
 - Device counts by type and status
 - Total storage aggregation
 - Quick stats at a glance
 
 ### Data Management
+
 - Export topology as JSON
 - Import existing configurations
 - PostgreSQL persistence
@@ -58,6 +64,7 @@ A self-hosted network visualization and monitoring platform for home lab enthusi
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - PostgreSQL database
 
@@ -65,17 +72,20 @@ A self-hosted network visualization and monitoring platform for home lab enthusi
 
 1. Clone the repository
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Set up environment variables:
+
    ```bash
    DATABASE_URL=your_postgres_connection_string
    SESSION_SECRET=your_session_secret
    ```
 
 4. Push database schema:
+
    ```bash
    npm run db:push
    ```
@@ -90,6 +100,7 @@ The application will be available at `http://localhost:5000`
 ## Docker Deployment
 
 For self-hosted deployment, see [DOCKER.md](./DOCKER.md) for complete Docker setup instructions including:
+
 - Multi-stage Dockerfile for optimized builds
 - Docker Compose configuration with PostgreSQL
 - Volume persistence and backup procedures
@@ -115,17 +126,17 @@ For self-hosted deployment, see [DOCKER.md](./DOCKER.md) for complete Docker set
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/nodes` | List all nodes |
-| POST | `/api/nodes` | Create a new node |
-| PUT | `/api/nodes/:id` | Update a node |
-| DELETE | `/api/nodes/:id` | Delete a node |
-| GET | `/api/edges` | List all edges |
-| POST | `/api/edges` | Create a new edge |
-| DELETE | `/api/edges/:id` | Delete an edge |
-| GET | `/api/export` | Export all topology data |
-| POST | `/api/import` | Import topology data |
+| Method | Endpoint         | Description              |
+| ------ | ---------------- | ------------------------ |
+| GET    | `/api/nodes`     | List all nodes           |
+| POST   | `/api/nodes`     | Create a new node        |
+| PUT    | `/api/nodes/:id` | Update a node            |
+| DELETE | `/api/nodes/:id` | Delete a node            |
+| GET    | `/api/edges`     | List all edges           |
+| POST   | `/api/edges`     | Create a new edge        |
+| DELETE | `/api/edges/:id` | Delete an edge           |
+| GET    | `/api/export`    | Export all topology data |
+| POST   | `/api/import`    | Import topology data     |
 
 ## License
 

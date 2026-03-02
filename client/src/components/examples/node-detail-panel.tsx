@@ -8,9 +8,7 @@ export default function NodeDetailPanelExample() {
   return (
     <div className="h-screen relative">
       <div className="p-4">
-        <Button onClick={() => setIsOpen(!isOpen)}>
-          Toggle Panel
-        </Button>
+        <Button onClick={() => setIsOpen(!isOpen)}>Toggle Panel</Button>
       </div>
       <NodeDetailPanel
         isOpen={isOpen}
@@ -22,9 +20,9 @@ export default function NodeDetailPanelExample() {
           osType: 'Proxmox VE',
           status: 'online',
           tags: ['virtual', 'hypervisor', 'production'],
-          serviceUrl: 'https://proxmox.local',
+          services: [{ name: 'HTTPS', url: 'https://proxmox.local' }],
           uptime: '99.8%',
-          lastSeen: '2 min ago'
+          lastSeen: '2 min ago',
         }}
       />
     </div>

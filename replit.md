@@ -13,12 +13,14 @@ Preferred communication style: Simple, everyday language.
 ### Frontend Architecture
 
 **Framework & Build System**
+
 - React 18+ with TypeScript for type-safe component development
 - Vite as the build tool and development server with hot module replacement
 - Wouter for lightweight client-side routing (instead of React Router)
 - Path aliases configured for clean imports (`@/`, `@shared/`, `@assets/`)
 
 **UI Component System**
+
 - shadcn/ui component library built on Radix UI primitives
 - Tailwind CSS for utility-first styling with custom design tokens
 - Dark-first design approach with light mode support
@@ -26,18 +28,21 @@ Preferred communication style: Simple, everyday language.
 - Design system inspired by technical infrastructure tools (Linear, Grafana, Proxmox)
 
 **State Management & Data Fetching**
+
 - TanStack Query (React Query) for server state management
 - Query client configured with custom fetch utilities in `lib/queryClient.ts`
 - No global state management library - relies on React Query cache and component state
 - Optimistic updates disabled by default (staleTime: Infinity)
 
 **Interactive Visualization**
+
 - React Flow library for the network canvas/diagramming functionality
 - Drag-and-drop node positioning with relationship edges
 - Custom node styles based on status (online/offline/degraded)
 - Position data stored as JSON in database
 
 **Key Design Patterns**
+
 - Component composition with shadcn/ui primitives
 - Custom hooks for reusable logic (use-mobile, use-toast)
 - Form handling with React Hook Form and Zod validation
@@ -47,12 +52,14 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 
 **Server Framework**
+
 - Express.js for HTTP server and API routing
 - TypeScript with ES modules (type: "module")
 - Custom middleware for request logging and error handling
 - Vite middleware integration for development hot-reload
 
 **API Design**
+
 - RESTful API endpoints under `/api` prefix
 - CRUD operations for nodes and edges
 - JSON request/response format
@@ -60,6 +67,7 @@ Preferred communication style: Simple, everyday language.
 - Storage abstraction layer (`IStorage` interface) for database operations
 
 **Database Layer**
+
 - Drizzle ORM for type-safe database queries
 - Neon serverless PostgreSQL as the database provider
 - WebSocket connection for serverless compatibility
@@ -67,18 +75,19 @@ Preferred communication style: Simple, everyday language.
 - Automatic UUID generation for primary keys
 
 **Database Schema**
+
 - **Nodes table**: Stores infrastructure nodes (servers, containers, devices)
   - Fields: id, name, ip, osType, deviceType, status, tags (array), services (JSONB array), storageTotal, storageUsed, position (JSON), uptime, lastSeen, timestamps
   - Position stored as JSONB for flexible coordinate data
   - deviceType: 'server' | 'router' | 'switch' | 'access-point' | 'nas' | 'container'
   - services: JSON array of {name, url} objects replacing deprecated serviceUrl field
   - storageTotal/storageUsed: optional numeric strings for NAS device capacity tracking
-  
 - **Edges table**: Stores relationships between nodes
   - Fields: id, source (FK to nodes), target (FK to nodes), animated flag, createdAt
   - Cascade delete when nodes are removed
 
 **Type Safety**
+
 - Shared schema types between client and server (`@shared/schema`)
 - Drizzle-Zod integration for runtime validation
 - InsertNode and InsertEdge types derived from schema
@@ -87,27 +96,32 @@ Preferred communication style: Simple, everyday language.
 ### External Dependencies
 
 **Core Infrastructure**
+
 - **Neon Database**: Serverless PostgreSQL hosting with WebSocket support
 - **Drizzle ORM**: Database toolkit with migration support (`drizzle-kit`)
 - **React Flow**: Interactive node-based diagram library
 
 **UI Component Libraries**
+
 - **Radix UI**: Accessible component primitives (40+ components installed)
 - **Tailwind CSS**: Utility-first CSS framework with PostCSS
 - **shadcn/ui**: Pre-built component system (configured in `components.json`)
 - **Lucide React**: Icon library for UI elements
 
 **Form & Validation**
+
 - **React Hook Form**: Form state management with performance optimization
 - **Zod**: Schema validation for forms and API payloads
 - **@hookform/resolvers**: Zod integration for React Hook Form
 
 **Development Tools**
+
 - **Replit Vite Plugins**: Runtime error overlay, cartographer, dev banner
 - **TSX**: TypeScript execution for development server
 - **esbuild**: Production build bundler for server code
 
 **Fonts & Styling**
+
 - **Inter**: Primary UI font (400, 500, 600, 700 weights)
 - **JetBrains Mono**: Monospace font for technical data (IPs, URLs)
 - Google Fonts CDN for font delivery
@@ -115,6 +129,7 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes (October 14, 2025)
 
 **Device Type System & NAS Storage Tracking** (Latest)
+
 - Added device type support for infrastructure categorization: servers, routers, switches, access points, NAS, and containers
 - Implemented device-specific icons in UI (Server, Router, Network, Wifi, HardDrive, Container from Lucide React)
 - Added NAS storage capacity tracking with storageTotal and storageUsed fields
@@ -129,6 +144,7 @@ Preferred communication style: Simple, everyday language.
 - System Health card shows NAS storage usage with dynamic color gradients (green/yellow/red)
 
 **Backend-Frontend Integration Complete**
+
 - Connected all frontend pages to PostgreSQL database via API
 - Dashboard now displays real-time stats from database
 - Nodes page performs full CRUD operations with backend
@@ -136,6 +152,7 @@ Preferred communication style: Simple, everyday language.
 - Export/import functionality fully implemented and working
 
 **Node Management UI Complete**
+
 - Created NodeFormDialog component for adding and editing nodes
 - Add Node button opens form dialog with all required fields
 - Edit functionality accessible via node card menu button
@@ -146,12 +163,14 @@ Preferred communication style: Simple, everyday language.
 - Modern, theme-aware scrollbar for dialog forms (8px thin, transparent track)
 
 **API Security Enhancements**
+
 - Added Zod validation to all routes including strict numeric validation for NAS storage
 - Whitelisted fields for update operations to prevent unauthorized modifications
 - Validated import data before persistence to prevent injection attacks
 - BaseInsertNodeSchema exported separately for frontend form extensions
 
 **UI/UX Enhancements**
+
 - Node edit form supports scrolling with modern, subtle scrollbar styling
 - Service names displayed as outline badges in node cards instead of just count
 - Custom `.modern-scrollbar` CSS utility for consistent scrollbar appearance
@@ -159,11 +178,13 @@ Preferred communication style: Simple, everyday language.
 - Device type badges and labels clearly identify infrastructure categories
 
 **Known Limitations**
+
 - Import operation validates upfront but lacks transactional rollback (acceptable for MVP)
 - Network discovery remains mocked in UI (planned for future release)
 - Metadata validation uses flexible `z.any()` schema for maximum compatibility across device types (trade-off: accepts any JSON structure vs strict per-device validation)
 
 **Network & VLAN Configuration** (November 28, 2025)
+
 - Enhanced Network Configuration to support multiple network ranges
 - VLAN management with ID, name, CIDR, and optional description
 - Toggle switches to enable/disable individual networks and VLANs
@@ -174,6 +195,7 @@ Preferred communication style: Simple, everyday language.
 - Configuration stored in local state (UI only, not yet persisted to database)
 
 **Storage Settings** (November 28, 2025)
+
 - Added Storage Configuration section to Settings page
 - NAS device management with add/edit/delete functionality
 - Aggregated storage totals from all NAS devices displayed
@@ -182,6 +204,7 @@ Preferred communication style: Simple, everyday language.
 - Storage summary shows total capacity, used space, and percentage
 
 **Self-Hosted Docker Deployment** (October 14, 2025)
+
 - Complete Docker configuration for self-hosting
 - Multi-stage Dockerfile for optimized production builds
 - Docker Compose setup with PostgreSQL and application services
@@ -192,6 +215,7 @@ Preferred communication style: Simple, everyday language.
 - Production-ready with reverse proxy and backup guidelines
 
 **Planned Features** (future releases)
+
 - Network discovery via ARP/ICMP/mDNS (UI stubbed)
 - Agent-based monitoring for real-time metrics
 - Transactional import with rollback support

@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Radar, Plus, X } from "lucide-react";
-import { useState } from "react";
-import { StatusBadge } from "@/components/status-badge";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Radar, Plus, X } from 'lucide-react';
+import { useState } from 'react';
+import { StatusBadge } from '@/components/status-badge';
 
 // TODO: Remove mock data
 const mockDiscoveredNodes = [
@@ -57,14 +57,14 @@ export default function DiscoveryPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">Network Discovery</h1>
-          <p className="text-lg text-muted-foreground mt-2">Automatically detect devices on your network</p>
+          <h1 className="text-4xl font-bold tracking-tight" data-testid="text-page-title">
+            Network Discovery
+          </h1>
+          <p className="text-lg text-muted-foreground mt-2">
+            Automatically detect devices on your network
+          </p>
         </div>
-        <Button 
-          onClick={handleScan} 
-          disabled={isScanning}
-          data-testid="button-start-scan"
-        >
+        <Button onClick={handleScan} disabled={isScanning} data-testid="button-start-scan">
           <Radar className={`h-4 w-4 mr-2 ${isScanning ? 'animate-spin' : ''}`} />
           {isScanning ? 'Scanning...' : 'Start Scan'}
         </Button>
@@ -78,7 +78,9 @@ export default function DiscoveryPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Network Range</label>
-              <Badge variant="secondary" className="font-mono">192.168.1.0/24</Badge>
+              <Badge variant="secondary" className="font-mono">
+                192.168.1.0/24
+              </Badge>
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Scan Method</label>
@@ -96,7 +98,7 @@ export default function DiscoveryPage() {
         <h2 className="text-xl font-semibold mb-4">
           Discovered Devices ({discoveredNodes.length})
         </h2>
-        
+
         {discoveredNodes.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
@@ -109,7 +111,7 @@ export default function DiscoveryPage() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {discoveredNodes.map((node) => (
+            {discoveredNodes.map(node => (
               <Card key={node.id} className="hover-elevate">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between gap-4">
@@ -129,16 +131,16 @@ export default function DiscoveryPage() {
                       </div>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         onClick={() => handleAddNode(node.id)}
                         data-testid={`button-add-${node.id}`}
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         Add
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="ghost"
                         onClick={() => handleDismiss(node.id)}
                         data-testid={`button-dismiss-${node.id}`}

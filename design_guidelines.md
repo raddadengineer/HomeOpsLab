@@ -6,6 +6,7 @@
 Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, Netbox) with custom interactive visualization components. Dark-first design with technical precision and visual clarity for home lab enthusiasts.
 
 **Key Design Principles:**
+
 1. Technical Confidence - Professional infrastructure tool aesthetic
 2. Information Density - Maximum useful data without clutter
 3. Interactive Focus - Canvas-first experience with supporting UI
@@ -18,6 +19,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 ### A. Color Palette
 
 **Dark Mode (Primary):**
+
 - Background Base: 220 20% 10% (deep slate)
 - Background Elevated: 220 18% 14% (cards, panels)
 - Background Interactive: 220 16% 18% (hover states)
@@ -32,6 +34,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 - Border Subtle: 220 15% 25%
 
 **Light Mode (Optional):**
+
 - Background: 220 15% 98%
 - Surface: 0 0% 100%
 - Primary/Accent colors remain vibrant for consistency
@@ -39,11 +42,13 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 ### B. Typography
 
 **Font Families:**
+
 - Primary: Inter (400, 500, 600, 700) - UI text, labels, data
 - Monospace: JetBrains Mono (400, 500) - IPs, URLs, technical data
 - Display: Inter (600, 700) - Headings, branding
 
 **Type Scale:**
+
 - Hero/Display: text-4xl font-bold (36px)
 - Page Titles: text-2xl font-semibold (24px)
 - Section Headers: text-lg font-semibold (18px)
@@ -54,12 +59,14 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 ### C. Layout System
 
 **Spacing Primitives:** Tailwind units of 2, 4, 6, 8, 12, 16
+
 - Micro spacing (gaps, padding): p-2, p-4
 - Component spacing: p-6, p-8, gap-4
 - Section spacing: py-12, py-16
 - Canvas margins: m-8, m-12
 
 **Grid System:**
+
 - Main Layout: Sidebar (280px fixed) + Canvas (flex-1) + Details Panel (360px slide-in)
 - Dashboard: 12-column grid with 3/4/6 column card layouts
 - Responsive: Stack to single column on mobile (<768px)
@@ -67,6 +74,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 ### D. Component Library
 
 **Navigation:**
+
 - Top Bar (h-16): Logo, global search (Cmd+K), user menu, theme toggle
 - Left Sidebar (w-70): Collapsed icons (w-16) or full navigation, sticky sections
   - Dashboard, Network Map, Nodes, Services, Discovery, Settings
@@ -74,6 +82,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 - Breadcrumbs: text-xs with slash separators for deep navigation
 
 **Interactive Canvas:**
+
 - Full viewport height (calc(100vh - 64px))
 - Dark grid pattern background (dot or square grid, subtle)
 - Minimap in bottom-right corner (160x120px)
@@ -87,12 +96,14 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
   - Offline: red border (border-red-500)
 
 **Cards & Panels:**
+
 - Standard Card: rounded-xl border border-subtle bg-elevated p-6
 - Stat Card: Metric + label + trend indicator + sparkline
 - Node Card: Icon (48px) + Name + IP + Tags + Quick actions
 - Shadow: shadow-lg for elevated cards
 
 **Forms & Inputs:**
+
 - Input Fields: h-10 rounded-md border border-subtle bg-base px-4
   - Focus: border-teal-500 ring-2 ring-teal-500/20
 - Buttons:
@@ -103,6 +114,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 - Toggle Switches: Teal when active
 
 **Data Display:**
+
 - Tables: Striped rows, sticky header, hover highlight
   - Header: bg-elevated border-b-2 border-teal-500
   - Rows: hover:bg-interactive
@@ -112,11 +124,13 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 - Metrics: Large number (text-3xl font-bold) + small label below
 
 **Modal/Overlays:**
+
 - Slide-in Panel (Details): 360px from right, backdrop blur
 - Modal Dialog: max-w-2xl centered, dark overlay (bg-black/60)
 - Toast Notifications: Top-right, 4s auto-dismiss, teal/orange based on type
 
 **Dashboard Widgets:**
+
 - System Status Grid: 3-4 columns of stat cards
 - Network Health Chart: Line chart showing uptime over time
 - Recent Activity Feed: Timeline with icons and timestamps
@@ -126,6 +140,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 ### E. Animations
 
 **Strategic Use Only:**
+
 - Node connections: Subtle pulse on active links (animation: pulse 2s infinite)
 - Status indicators: Gentle breathing effect for online nodes
 - Panel transitions: slide-in/out (duration-300)
@@ -137,6 +152,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 ## Layout Specifications
 
 **Main Canvas View:**
+
 - Full-screen interactive workspace
 - Top bar with search and actions
 - Collapsible left sidebar (hover to expand on collapse)
@@ -144,6 +160,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 - Bottom status bar: Connection count, last scan, health summary
 
 **Dashboard View:**
+
 - Hero section (h-32): Overall health score + critical alerts
 - 4-column stat grid: Total nodes, Services, Uptime %, Active connections
 - 2-column layout below: Charts (left 8-cols) + Activity feed (right 4-cols)
@@ -151,6 +168,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 - Footer stats: Last discovery scan, database size, agent status
 
 **Node Detail Panel:**
+
 - Header: Icon + Name + Status badge
 - Tabs: Overview, Services, Monitoring, Connections, Edit
 - Metadata grid: IP, OS, Tags, Custom fields
@@ -163,12 +181,14 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 ## Images
 
 **Dashboard Hero Background:**
+
 - Subtle abstract network visualization (nodes and connections)
 - Dark teal gradient overlay (from 220 20% 10% to teal-900/40)
 - Positioned as background, not prominent foreground
 - Location: Dashboard hero section only
 
 **Node Type Icons:**
+
 - Use FontAwesome or Heroicons for node type indicators
 - Server: server icon
 - Container: cube icon
@@ -177,6 +197,7 @@ Drawing inspiration from modern infrastructure tools (Linear, Grafana, Proxmox, 
 - VM: desktop icon
 
 **Empty States:**
+
 - Illustration for empty canvas: "No nodes yet - Click discover or add manually"
 - Simple line art style, teal accents
 - Location: Center of canvas when no nodes exist

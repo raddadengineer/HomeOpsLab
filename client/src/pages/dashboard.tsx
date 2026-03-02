@@ -1,12 +1,12 @@
-import { StatCard } from "@/components/stat-card";
-import { NodeCard } from "@/components/node-card";
-import { Server, Activity, Network, HardDrive } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { NodeDetailPanel } from "@/components/node-detail-panel";
-import { useQuery } from "@tanstack/react-query";
-import type { Node } from "@shared/schema";
+import { StatCard } from '@/components/stat-card';
+import { NodeCard } from '@/components/node-card';
+import { Server, Activity, Network, HardDrive } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { NodeDetailPanel } from '@/components/node-detail-panel';
+import { useQuery } from '@tanstack/react-query';
+import type { Node } from '@shared/schema';
 
 export default function Dashboard() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -57,32 +57,34 @@ export default function Dashboard() {
   return (
     <div className="p-6 space-y-6">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold tracking-tight mb-2" data-testid="text-page-title">Dashboard</h1>
+        <h1 className="text-4xl font-bold tracking-tight mb-2" data-testid="text-page-title">
+          Dashboard
+        </h1>
         <p className="text-lg text-muted-foreground">Overview of your home lab infrastructure</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Total Nodes" 
-          value={totalNodes} 
-          icon={Server}
-        />
-        <StatCard 
-          title="Online" 
-          value={`${onlineNodes}/${totalNodes}`} 
+        <StatCard title="Total Nodes" value={totalNodes} icon={Server} />
+        <StatCard
+          title="Online"
+          value={`${onlineNodes}/${totalNodes}`}
           icon={Activity}
-          trend={onlineNodes === totalNodes ? { value: "All up", positive: true } : undefined}
+          trend={onlineNodes === totalNodes ? { value: 'All up', positive: true } : undefined}
         />
-        <StatCard 
-          title="Services" 
-          value={nodes.reduce((acc, n) => acc + (n.services?.length || 0), 0)} 
+        <StatCard
+          title="Services"
+          value={nodes.reduce((acc, n) => acc + (n.services?.length || 0), 0)}
           icon={Network}
         />
-        <StatCard 
-          title="Storage" 
-          value={totalStorage > 0 ? formatStorageRange(usedStorage, totalStorage) : 'No NAS'} 
+        <StatCard
+          title="Storage"
+          value={totalStorage > 0 ? formatStorageRange(usedStorage, totalStorage) : 'No NAS'}
           icon={HardDrive}
-          trend={totalStorage > 0 ? { value: `${storagePercent}% used`, positive: storagePercent < 80 } : undefined}
+          trend={
+            totalStorage > 0
+              ? { value: `${storagePercent}% used`, positive: storagePercent < 80 }
+              : undefined
+          }
         />
       </div>
 
@@ -115,15 +117,19 @@ export default function Dashboard() {
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Storage Usage</span>
                   <span className="font-semibold text-base">
-                    {totalStorage > 0 ? formatStorageRange(usedStorage, totalStorage) : 'No NAS devices'}
+                    {totalStorage > 0
+                      ? formatStorageRange(usedStorage, totalStorage)
+                      : 'No NAS devices'}
                   </span>
                 </div>
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className={`h-full transition-all duration-300 ${
-                      storagePercent > 80 ? 'bg-gradient-to-r from-red-500 to-orange-400' : 
-                      storagePercent > 60 ? 'bg-gradient-to-r from-yellow-500 to-amber-400' : 
-                      'bg-gradient-to-r from-green-500 to-emerald-400'
+                      storagePercent > 80
+                        ? 'bg-gradient-to-r from-red-500 to-orange-400'
+                        : storagePercent > 60
+                          ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
+                          : 'bg-gradient-to-r from-green-500 to-emerald-400'
                     }`}
                     style={{ width: `${storagePercent}%` }}
                   />
@@ -178,7 +184,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentNodes.map((node) => (
+            {recentNodes.map(node => (
               <NodeCard
                 key={node.id}
                 id={node.id}
@@ -186,7 +192,7 @@ export default function Dashboard() {
                 ip={node.ip}
                 osType={node.osType}
                 deviceType={node.deviceType}
-                status={node.status as "online" | "offline" | "degraded" | "unknown"}
+                status={node.status as 'online' | 'offline' | 'degraded' | 'unknown'}
                 tags={node.tags}
                 services={node.services}
                 storageTotal={node.storageTotal || undefined}
@@ -201,20 +207,26 @@ export default function Dashboard() {
       <NodeDetailPanel
         isOpen={!!selectedNode}
         onClose={() => setSelectedNode(null)}
-        node={selectedNode ? {
-          id: selectedNode.id,
-          name: selectedNode.name,
-          ip: selectedNode.ip,
-          osType: selectedNode.osType,
-          deviceType: selectedNode.deviceType,
-          status: selectedNode.status as "online" | "offline" | "degraded" | "unknown",
-          tags: selectedNode.tags,
-          services: selectedNode.services,
-          storageTotal: selectedNode.storageTotal || undefined,
-          storageUsed: selectedNode.storageUsed || undefined,
-          uptime: selectedNode.uptime || undefined,
-          lastSeen: selectedNode.lastSeen ? new Date(selectedNode.lastSeen).toLocaleString() : undefined,
-        } : undefined}
+        node={
+          selectedNode
+            ? {
+                id: selectedNode.id,
+                name: selectedNode.name,
+                ip: selectedNode.ip,
+                osType: selectedNode.osType,
+                deviceType: selectedNode.deviceType,
+                status: selectedNode.status as 'online' | 'offline' | 'degraded' | 'unknown',
+                tags: selectedNode.tags,
+                services: selectedNode.services,
+                storageTotal: selectedNode.storageTotal || undefined,
+                storageUsed: selectedNode.storageUsed || undefined,
+                uptime: selectedNode.uptime || undefined,
+                lastSeen: selectedNode.lastSeen
+                  ? new Date(selectedNode.lastSeen).toLocaleString()
+                  : undefined,
+              }
+            : undefined
+        }
       />
     </div>
   );
