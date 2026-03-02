@@ -4,10 +4,11 @@ import { nodeService } from '../services/node.service';
 import { settingsService } from '../services/settings.service';
 
 export class DiscoveryController {
-    async scanNetwork(_req: Request, res: Response) {
+    async scanNetwork(req: Request, res: Response) {
         try {
+            const targetCidr = req.body.networkCidr as string | undefined;
             // Return a 202 quickly if we wanted async, but we'll wait for the ping sweep for immediate response
-            const newlyDiscoveredIps = await scannerService.discoverNetwork();
+            const newlyDiscoveredIps = await scannerService.discoverNetwork(targetCidr);
 
             // format them into mock node shapes so the UI can display them correctly
             const newlyDiscoveredNodes = newlyDiscoveredIps.map((ip, i) => ({

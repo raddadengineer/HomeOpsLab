@@ -110,6 +110,7 @@ export const settings = pgTable('settings', {
   networkRanges: jsonb('network_ranges').notNull().default('[]'),
   vlans: jsonb('vlans').notNull().default('[]'),
   scanSettings: jsonb('scan_settings').notNull().default('{"interval":60,"autoDiscovery":true}'),
+  integrations: jsonb('integrations').notNull().default('{}'),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
@@ -123,7 +124,7 @@ export const baseInsertNodeSchema = createInsertSchema(nodes)
   .extend({
     services: z.array(serviceSchema).default([]),
     deviceType: z
-      .enum(['server', 'router', 'switch', 'access-point', 'nas', 'container'])
+      .enum(['server', 'router', 'switch', 'access-point', 'nas', 'container', 'gateway'])
       .default('server'),
     storageTotal: z.string().optional(),
     storageUsed: z.string().optional(),
@@ -142,7 +143,7 @@ export const updateNodeSchema = createInsertSchema(nodes)
   .extend({
     services: z.array(serviceSchema).optional(),
     deviceType: z
-      .enum(['server', 'router', 'switch', 'access-point', 'nas', 'container'])
+      .enum(['server', 'router', 'switch', 'access-point', 'nas', 'container', 'gateway'])
       .optional(),
     storageTotal: z.string().optional(),
     storageUsed: z.string().optional(),

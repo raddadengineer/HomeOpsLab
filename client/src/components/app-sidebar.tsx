@@ -43,7 +43,7 @@ export function AppSidebar() {
   const [location] = useLocation();
 
   return (
-    <Sidebar>
+    <Sidebar className="border-r border-border/30 bg-sidebar/50 backdrop-blur-xl supports-[backdrop-filter]:bg-sidebar/30">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-lg font-bold text-primary mb-4">

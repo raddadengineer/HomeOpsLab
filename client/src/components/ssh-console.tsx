@@ -4,9 +4,15 @@ import { FitAddon } from '@xterm/addon-fit';
 import 'xterm/css/xterm.css';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { TerminalSquare } from 'lucide-react';
+import { TerminalSquare, Maximize2, Minimize2 } from 'lucide-react';
 
-export function SSHConsole({ ip }: { ip: string }) {
+interface SSHConsoleProps {
+    ip: string;
+    isExpanded?: boolean;
+    onExpandToggle?: () => void;
+}
+
+export function SSHConsole({ ip, isExpanded, onExpandToggle }: SSHConsoleProps) {
     const terminalRef = useRef<HTMLDivElement>(null);
     const term = useRef<Terminal | null>(null);
     const fitAddon = useRef<FitAddon | null>(null);
@@ -108,7 +114,7 @@ export function SSHConsole({ ip }: { ip: string }) {
     }, []);
 
     return (
-        <div className="flex flex-col w-full h-[500px] border border-border rounded-md overflow-hidden">
+        <div className={`flex flex-col w-full border border-border overflow-hidden ${isExpanded ? 'h-[80vh] rounded-xl' : 'h-[500px] rounded-md'}`}>
             {!connected && (
                 <div className="p-6 flex flex-col items-center justify-center h-full bg-card/50">
                     <TerminalSquare className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
@@ -145,9 +151,16 @@ export function SSHConsole({ ip }: { ip: string }) {
                         <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
                         <span className="text-xs font-mono text-zinc-300">{username}@{ip}</span>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={handleDisconnect} className="h-6 text-xs text-zinc-400 hover:text-white hover:bg-red-500/20">
-                        Disconnect
-                    </Button>
+                    <div className="flex items-center gap-1">
+                        {onExpandToggle && (
+                            <Button variant="ghost" size="icon" onClick={onExpandToggle} className="h-6 w-6 text-zinc-400 hover:text-white mr-2">
+                                {isExpanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+                            </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={handleDisconnect} className="h-6 text-xs text-zinc-400 hover:text-white hover:bg-red-500/20">
+                            Disconnect
+                        </Button>
+                    </div>
                 </div>
             )}
 

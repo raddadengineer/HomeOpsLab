@@ -99,7 +99,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="hover-elevate transition-all duration-200">
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-xl">System Health</CardTitle>
           </CardHeader>
@@ -141,10 +141,10 @@ export default function Dashboard() {
                 <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-300 ${storagePercent > 80
-                        ? 'bg-gradient-to-r from-red-500 to-orange-400'
-                        : storagePercent > 60
-                          ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
-                          : 'bg-gradient-to-r from-green-500 to-emerald-400'
+                      ? 'bg-gradient-to-r from-red-500 to-orange-400'
+                      : storagePercent > 60
+                        ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
+                        : 'bg-gradient-to-r from-green-500 to-emerald-400'
                       }`}
                     style={{ width: `${storagePercent}%` }}
                   />
@@ -154,14 +154,14 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="hover-elevate transition-all duration-200">
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-xl">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {recentlyUpdatedNodes.map(node => (
-                <div key={node.id} className="flex items-start gap-3 p-2 rounded-lg hover-elevate transition-all duration-200">
+                <div key={node.id} className="flex items-start gap-3 p-3 rounded-xl bg-background/40 border border-white/5 hover:bg-background/60 hover:shadow-md transition-all duration-300">
                   <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${node.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{node.name} {node.status === 'online' ? 'is online' : 'went offline/updated'}</p>

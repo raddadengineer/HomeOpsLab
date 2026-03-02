@@ -80,16 +80,19 @@ class ScannerService {
   }
 
   /**
-   * Performs a ping sweep across all active network ranges defined in Settings
+   * Performs a ping sweep across all active network ranges defined in Settings, or a specific CIDR target.
    * @returns an array of newly discovered IPs that are online but not in the DB
    */
-  async discoverNetwork(): Promise<string[]> {
+  async discoverNetwork(targetCidr?: string): Promise<string[]> {
     try {
-      log('Running background auto-discovery sweep...');
+      log(`Running background auto-discovery sweep... ${targetCidr ? `(Target: ${targetCidr})` : ''}`);
       const settings = await settingsService.getSettings();
       const networkRanges = (settings.networkRanges || []) as Array<{ cidr: string; enabled: boolean }>;
 
-      const activeRanges = networkRanges.filter((r) => r.enabled);
+      const activeRanges = targetCidr
+        ? [{ cidr: targetCidr, enabled: true }]
+        : networkRanges.filter((r) => r.enabled);
+
       if (activeRanges.length === 0) return [];
 
       let allIpsToScan: string[] = [];

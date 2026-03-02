@@ -1,6 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { StatusBadge } from './status-badge';
 import {
   ExternalLink,
@@ -10,6 +11,7 @@ import {
   Network,
   Wifi,
   HardDrive,
+  HardDriveDownload,
   Box,
 } from 'lucide-react';
 import type { Service, DeviceMetadata } from '@shared/schema';
@@ -26,6 +28,8 @@ interface NodeCardProps {
   storageTotal?: string;
   storageUsed?: string;
   metadata?: DeviceMetadata;
+  isSelected?: boolean;
+  onSelect?: (selected: boolean) => void;
   onClick?: () => void;
   onEdit?: () => void;
 }
@@ -40,6 +44,8 @@ const getDeviceIcon = (deviceType?: string) => {
       return Wifi;
     case 'nas':
       return HardDrive;
+    case 'gateway':
+      return HardDriveDownload;
     case 'container':
       return Box;
     default:
@@ -57,6 +63,8 @@ const getDeviceLabel = (deviceType?: string) => {
       return 'Access Point';
     case 'nas':
       return 'NAS';
+    case 'gateway':
+      return 'Gateway';
     case 'container':
       return 'Container';
     default:
@@ -76,6 +84,8 @@ export function NodeCard({
   storageTotal,
   storageUsed,
   metadata,
+  isSelected,
+  onSelect,
   onClick,
   onEdit,
 }: NodeCardProps) {
@@ -95,15 +105,28 @@ export function NodeCard({
 
   return (
     <Card
-      className="hover-elevate cursor-pointer transition-all duration-200 group"
+      className="glass-card cursor-pointer group"
       onClick={onClick}
       data-testid={`card-node-${id}`}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
+      <CardHeader className="pb-3 relative">
+        {onSelect && (
+          <div
+            className={`absolute top-4 left-4 z-10 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={checked => onSelect(checked as boolean)}
+              className="w-5 h-5 border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all duration-200 shadow-sm"
+              data-testid={`checkbox-select-${id}`}
+            />
+          </div>
+        )}
+        <div className={`flex items-start justify-between gap-2 ${onSelect ? 'pl-8' : ''}`}>
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0 group-hover:from-primary/30 group-hover:to-primary/20 transition-all duration-200">
-              <DeviceIcon className="h-6 w-6 text-primary" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+              <DeviceIcon className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-base truncate" data-testid={`text-node-name-${id}`}>
@@ -271,10 +294,10 @@ export function NodeCard({
               >
                 <div
                   className={`mr-1.5 h-1.5 w-1.5 rounded-full ${service.status === 'online'
-                      ? 'bg-green-500'
-                      : service.status === 'offline'
-                        ? 'bg-red-500'
-                        : 'bg-muted-foreground'
+                    ? 'bg-green-500'
+                    : service.status === 'offline'
+                      ? 'bg-red-500'
+                      : 'bg-muted-foreground'
                     }`}
                 />
                 {service.name}

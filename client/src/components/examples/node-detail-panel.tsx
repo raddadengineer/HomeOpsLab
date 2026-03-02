@@ -22,7 +22,7 @@ export default function NodeDetailPanelExample() {
           tags: ['virtual', 'hypervisor', 'production'],
           services: [{ name: 'HTTPS', url: 'https://proxmox.local' }],
           uptime: '99.8%',
-          lastSeen: '2 min ago',
+          lastSeen: new Date(),
         }}
       />
     </div>

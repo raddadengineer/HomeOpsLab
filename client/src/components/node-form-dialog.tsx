@@ -43,6 +43,12 @@ import { useEffect } from 'react';
 const formSchema = baseInsertNodeSchema
   .extend({
     tags: z.string().optional(),
+    customFields: z.array(
+      z.object({
+        key: z.string().min(1, 'Key is required'),
+        value: z.string().min(1, 'Value is required'),
+      })
+    ).optional(),
   })
   .superRefine((data, ctx) => {
     // Strict numeric validation regex - only accepts numbers with optional decimal
@@ -108,6 +114,20 @@ const formSchema = baseInsertNodeSchema
 
 type FormValues = z.infer<typeof formSchema>;
 
+const STANDARD_METADATA_KEYS = new Set([
+  'wanIp', 'gateway', 'dhcpRange', 'portCount', 'portSpeed', 'managementType',
+  'vlanSupport', 'wifiStandard', 'ssid', 'channel', 'security', 'raidType',
+  'protocols', 'runtime', 'image', 'ports', 'cpu', 'ram', 'platform', 'macAddress'
+]);
+
+// Helper to extract custom fields from metadata
+const getCustomFields = (metadata?: Record<string, any>) => {
+  if (!metadata) return [];
+  return Object.entries(metadata)
+    .filter(([key]) => !STANDARD_METADATA_KEYS.has(key))
+    .map(([key, value]) => ({ key, value: String(value) }));
+};
+
 interface NodeFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -149,12 +169,18 @@ export function NodeFormDialog({
       storageTotal: node?.storageTotal || '',
       storageUsed: node?.storageUsed || '',
       metadata: node?.metadata || undefined,
+      customFields: getCustomFields(node?.metadata),
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'services',
+  });
+
+  const { fields: customFields, append: appendCustom, remove: removeCustom } = useFieldArray({
+    control: form.control,
+    name: 'customFields',
   });
 
   useEffect(() => {
@@ -170,6 +196,7 @@ export function NodeFormDialog({
         storageTotal: node?.storageTotal || '',
         storageUsed: node?.storageUsed || '',
         metadata: node?.metadata || undefined,
+        customFields: getCustomFields(node?.metadata),
       });
     }
   }, [open, node, form, defaultDeviceType]);
@@ -222,10 +249,26 @@ export function NodeFormDialog({
   const onSubmit = (values: FormValues) => {
     const tagsArray = values.tags
       ? values.tags
-          .split(',')
-          .map(t => t.trim())
-          .filter(Boolean)
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean)
       : [];
+
+    let finalMetadata = { ...values.metadata };
+
+    // Mix the custom key-values back into the metadata object
+    if (values.customFields && values.customFields.length > 0) {
+      values.customFields.forEach(field => {
+        if (field.key && field.value) {
+          finalMetadata[field.key] = field.value;
+        }
+      });
+    }
+
+    // Clean up empty metadata
+    if (Object.keys(finalMetadata).length === 0) {
+      finalMetadata = undefined as any;
+    }
 
     const data: InsertNode = {
       name: values.name,
@@ -237,7 +280,7 @@ export function NodeFormDialog({
       services: values.services || [],
       storageTotal: values.storageTotal,
       storageUsed: values.storageUsed,
-      metadata: values.metadata,
+      metadata: finalMetadata,
     };
 
     if (isEdit) {
@@ -265,53 +308,63 @@ export function NodeFormDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. Proxmox Server"
-                      {...field}
-                      data-testid="input-node-name"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="ip"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>IP Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. 192.168.1.10" {...field} data-testid="input-node-ip" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="osType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>OS Type</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. Proxmox VE, Ubuntu 22.04"
-                      {...field}
-                      data-testid="input-node-ostype"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. pfSense-VM" {...field} data-testid="input-node-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="ip"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>IP Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="192.168.1.1" {...field} data-testid="input-node-ip" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="osType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>OS Type</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Ubuntu 22.04" {...field} data-testid="input-node-os" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="metadata.macAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>MAC Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. 00:1A:2B:3C:4D:5E" {...field} value={field.value || ''} data-testid="input-node-mac" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="deviceType"
@@ -330,6 +383,7 @@ export function NodeFormDialog({
                       <SelectItem value="switch">Switch</SelectItem>
                       <SelectItem value="access-point">Access Point</SelectItem>
                       <SelectItem value="nas">Network Attached Storage (NAS)</SelectItem>
+                      <SelectItem value="gateway">Gateway / Modem</SelectItem>
                       <SelectItem value="container">Container</SelectItem>
                     </SelectContent>
                   </Select>
@@ -497,10 +551,10 @@ export function NodeFormDialog({
                   name="metadata.ssid"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>SSID</FormLabel>
+                      <FormLabel>SSIDs (comma separated)</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. HomeNetwork-5G"
+                          placeholder="e.g. HomeNetwork-5G, Home-IoT"
                           {...field}
                           data-testid="input-ssid"
                         />
@@ -861,6 +915,84 @@ export function NodeFormDialog({
                 </div>
               ))}
             </div>
+
+            {/* Custom Metadata Key/Value Array */}
+            <div className="space-y-2 pt-4 border-t border-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <FormLabel>Custom Attributes</FormLabel>
+                  <FormDescription>Store arbitrary metrics like physical location, OS versions, etc.</FormDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => appendCustom({ key: '', value: '' })}
+                  data-testid="button-add-custom-field"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Field
+                </Button>
+              </div>
+
+              {customFields.length === 0 && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  No custom attributes added.
+                </p>
+              )}
+              {customFields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="flex gap-2 items-start p-3 border rounded-md"
+                  data-testid={`custom-field-item-${index}`}
+                >
+                  <div className="flex-1 space-y-2">
+                    <FormField
+                      control={form.control}
+                      name={`customFields.${index}.key`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder="Key (e.g. rackLocation)"
+                              {...field}
+                              data-testid={`input-custom-key-${index}`}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`customFields.${index}.value`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder="Value (e.g. U14)"
+                              {...field}
+                              data-testid={`input-custom-val-${index}`}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeCustom(index)}
+                    data-testid={`button-remove-custom-field-${index}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
             <DialogFooter>
               <Button
                 type="button"

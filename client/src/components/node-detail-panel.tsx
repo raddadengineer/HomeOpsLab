@@ -3,36 +3,39 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { StatusBadge } from './status-badge';
+import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import type { Service, DeviceMetadata } from '@shared/schema';
+import { Power, Terminal, Edit, Trash2, RefreshCw } from 'lucide-react';
+import type { Service, DeviceMetadata, Node } from '@shared/schema';
 import { SSHConsole } from './ssh-console';
+
+const STANDARD_METADATA_KEYS = new Set([
+  'wanIp', 'gateway', 'dhcpRange', 'portCount', 'portSpeed', 'managementType',
+  'vlanSupport', 'wifiStandard', 'ssid', 'channel', 'security', 'raidType',
+  'protocols', 'runtime', 'image', 'ports', 'cpu', 'ram', 'platform', 'macAddress'
+]);
+
+const getCustomFields = (metadata?: Record<string, any>) => {
+  if (!metadata) return [];
+  return Object.entries(metadata)
+    .filter(([key]) => !STANDARD_METADATA_KEYS.has(key))
+    .map(([key, value]) => ({ key, value: String(value) }));
+};
 
 interface NodeDetailPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onEdit?: () => void;
-  node?: {
-    id: string;
-    name: string;
-    ip: string;
-    osType: string;
-    deviceType?: string;
-    status: 'online' | 'offline' | 'degraded' | 'unknown';
-    tags: string[];
-    services?: Service[];
-    storageTotal?: string;
-    storageUsed?: string;
-    metadata?: DeviceMetadata;
-    uptime?: string;
-    lastSeen?: string;
-  };
+  node?: any;
 }
 
 export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPanelProps) {
   const { toast } = useToast();
+  const [showExpandedTerminal, setShowExpandedTerminal] = useState(false);
 
   const { data: metricsData, isLoading: isMetricsLoading, isError: isMetricsError } = useQuery<any>({
     queryKey: [`/api/nodes/${node?.id}/metrics`],
@@ -62,6 +65,25 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
     },
   });
 
+  const wakeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest('POST', `/api/nodes/${id}/wake`);
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Magic Packet Sent',
+        description: 'Wake-on-LAN packet broadcasted successfully.',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Wake-on-LAN Failed',
+        description: 'Ensure the node has a valid MAC Address and your network allows WoL broadcasts.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleDelete = () => {
     if (node && confirm(`Are you sure you want to delete "${node.name}"?`)) {
       deleteMutation.mutate(node.id);
@@ -69,6 +91,12 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
   };
 
   if (!isOpen || !node) return null;
+
+  const handleWake = () => {
+    wakeMutation.mutate(node.id);
+  };
+
+  const customFields = getCustomFields(node.metadata || undefined);
 
   return (
     <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-96 bg-card/95 backdrop-blur-xl border-l border-border shadow-2xl z-50 overflow-y-auto modern-scrollbar">
@@ -80,13 +108,25 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
             </h2>
             <p className="text-sm text-muted-foreground font-mono">{node.ip}</p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} data-testid="button-close-panel">
-            <X className="h-4 w-4" />
-          </Button>
+
+          <div className="flex gap-2">
+            {node.status === 'offline' && node.metadata && (node.metadata as any).macAddress && (
+              <Button variant="outline" size="sm" onClick={handleWake} disabled={wakeMutation.isPending} className="border-primary/50 text-primary hover:bg-primary/10">
+                <Power className={`h-4 w-4 mr-1 ${wakeMutation.isPending ? 'animate-pulse' : ''}`} />
+                Wake Up
+              </Button>
+            )}
+            <Button variant="outline" size="icon" onClick={onEdit} data-testid="button-edit-node-detail">
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={onClose} data-testid="button-close-panel">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 mb-4">
-          <StatusBadge status={node.status} />
+          <StatusBadge status={node.status as 'online' | 'offline' | 'degraded' | 'unknown'} />
           <Badge variant="outline">{node.osType}</Badge>
         </div>
 
@@ -114,7 +154,7 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
             <div>
               <h3 className="text-sm font-semibold mb-2">Tags</h3>
               <div className="flex flex-wrap gap-1.5">
-                {node.tags.map(tag => (
+                {node.tags.map((tag: string) => (
                   <Badge key={tag} variant="secondary">
                     {tag}
                   </Badge>
@@ -133,13 +173,31 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
                   <dt className="text-muted-foreground">OS Type</dt>
                   <dd>{node.osType}</dd>
                 </div>
+                <div className="flex justify-between border-b pb-2">
+                  <dt className="text-muted-foreground">Type</dt>
+                  <dd>{node.deviceType || 'Standard Node'}</dd>
+                </div>
+                {node.metadata && (node.metadata as any).macAddress && (
+                  <div className="flex justify-between border-b pb-2">
+                    <dt className="text-muted-foreground">MAC Address</dt>
+                    <dd className="font-mono text-xs">{String((node.metadata as any).macAddress)}</dd>
+                  </div>
+                )}
+                {node.storageTotal && node.storageUsed && node.deviceType !== 'nas' && (
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Storage</dt>
+                    <dd className="font-mono">
+                      {node.storageUsed}/{node.storageTotal} GB
+                    </dd>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Uptime</dt>
                   <dd>{node.uptime || '99.8%'}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Last Seen</dt>
-                  <dd>{node.lastSeen || '2 min ago'}</dd>
+                  <dd>{node.lastSeen ? new Date(node.lastSeen).toLocaleString() : '2 min ago'}</dd>
                 </div>
               </dl>
             </div>
@@ -149,7 +207,7 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
               <div>
                 <h3 className="text-sm font-semibold mb-2">Device Information</h3>
                 <dl className="space-y-2 text-sm">
-                  {node.deviceType === 'router' && 'wanIp' in node.metadata && (
+                  {(node.deviceType === 'router' || node.deviceType === 'gateway') && 'wanIp' in node.metadata && (
                     <>
                       {node.metadata.wanIp && (
                         <div className="flex justify-between">
@@ -208,9 +266,13 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
                         </div>
                       )}
                       {node.metadata.ssid && (
-                        <div className="flex justify-between">
-                          <dt className="text-muted-foreground">SSID</dt>
-                          <dd className="font-mono">{node.metadata.ssid}</dd>
+                        <div className="flex justify-between items-start">
+                          <dt className="text-muted-foreground mt-1">SSID(s)</dt>
+                          <dd className="flex flex-col items-end gap-1">
+                            {String(node.metadata.ssid).split(',').map(s => s.trim()).map((ssid, i) => (
+                              <Badge key={i} variant="outline" className="font-mono text-xs">{ssid}</Badge>
+                            ))}
+                          </dd>
                         </div>
                       )}
                       {node.metadata.channel && (
@@ -298,12 +360,27 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
                 </dl>
               </div>
             )}
+
+            {/* Custom Variables / Metadata Loop */}
+            {customFields.length > 0 && (
+              <div className="pt-2">
+                <h3 className="text-sm font-semibold mb-2">Custom Attributes</h3>
+                <dl className="space-y-2 text-sm bg-muted/30 p-3 rounded-lg border border-border/50">
+                  {customFields.map(({ key, value }, i) => (
+                    <div key={i} className="flex flex-col sm:flex-row sm:justify-between py-1 border-b border-border/30 last:border-0 gap-1 sm:gap-4">
+                      <dt className="text-muted-foreground break-all">{key}</dt>
+                      <dd className="font-mono text-right break-all">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="services" className="space-y-4 mt-4">
             {node.services && node.services.length > 0 ? (
               <div className="space-y-2">
-                {node.services.map((service, index) => (
+                {node.services.map((service: any, index: number) => (
                   <Button
                     key={index}
                     variant="outline"
@@ -398,7 +475,10 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
 
           {node.deviceType === 'server' && (
             <TabsContent value="terminal" className="mt-4">
-              <SSHConsole ip={node.ip} />
+              <SSHConsole
+                ip={node.ip}
+                onExpandToggle={() => setShowExpandedTerminal(true)}
+              />
             </TabsContent>
           )}
         </Tabs>
@@ -425,6 +505,20 @@ export function NodeDetailPanel({ isOpen, onClose, onEdit, node }: NodeDetailPan
           </Button>
         </div>
       </div>
+
+      {/* Expanded Terminal Overlay Component */}
+      <Dialog open={showExpandedTerminal} onOpenChange={setShowExpandedTerminal}>
+        <DialogContent className="max-w-[90vw] w-[1400px] p-0 overflow-hidden bg-background border-zinc-800">
+          <DialogTitle className="sr-only">Interactive Terminal: {node.name}</DialogTitle>
+          <div className="bg-zinc-950 p-4 pb-0 h-[80vh] flex flex-col">
+            <SSHConsole
+              ip={node.ip}
+              isExpanded={true}
+              onExpandToggle={() => setShowExpandedTerminal(false)}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

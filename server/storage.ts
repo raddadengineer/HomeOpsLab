@@ -1,7 +1,7 @@
 import { type Node, type InsertNode, type Edge, type InsertEdge } from '@shared/schema';
 import { db } from './db';
 import { nodes, edges } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 export interface IStorage {
   // Node operations
@@ -10,6 +10,7 @@ export interface IStorage {
   createNode(node: InsertNode): Promise<Node>;
   updateNode(id: string, node: Partial<InsertNode>): Promise<Node | undefined>;
   deleteNode(id: string): Promise<void>;
+  deleteNodes(ids: string[]): Promise<void>;
 
   // Edge operations
   getAllEdges(): Promise<Edge[]>;
@@ -45,6 +46,10 @@ export class DbStorage implements IStorage {
 
   async deleteNode(id: string): Promise<void> {
     await db.delete(nodes).where(eq(nodes.id, id));
+  }
+
+  async deleteNodes(ids: string[]): Promise<void> {
+    await db.delete(nodes).where(inArray(nodes.id, ids));
   }
 
   // Edge operations

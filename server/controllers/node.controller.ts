@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { nodeService } from '../services/node.service';
+import wol from 'wake_on_lan';
 
 export class NodeController {
   async getAllNodes(req: Request, res: Response) {
@@ -50,6 +51,51 @@ export class NodeController {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: 'Failed to delete node' });
+    }
+  }
+
+  async wakeNode(req: Request, res: Response) {
+    try {
+      const node = await nodeService.getNodeById(req.params.id);
+      if (!node) {
+        return res.status(404).json({ error: 'Node not found' });
+      }
+
+      const macAddress = typeof node.metadata === 'object' && node.metadata !== null
+        ? (node.metadata as any).macAddress
+        : null;
+
+      if (!macAddress) {
+        return res.status(400).json({ error: 'No MAC address configured for this node' });
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        wol.wake(macAddress, (error: any) => {
+          if (error) {
+            console.error('Wake-on-LAN error:', error);
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      res.status(200).json({ message: 'Magic packet sent successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to send magic packet' });
+    }
+  }
+
+  async bulkDeleteNodes(req: Request, res: Response) {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: 'Array of ids is required' });
+      }
+      await nodeService.deleteNodes(ids);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to bulk delete nodes' });
     }
   }
 }

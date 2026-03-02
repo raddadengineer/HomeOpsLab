@@ -37,10 +37,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <SidebarProvider style={style as React.CSSProperties}>
-          <div className="flex h-screen w-full">
+          <div className="flex h-screen w-full relative overflow-hidden bg-background">
+            {/* Ambient Background Glows */}
+            <div className="ambient-glow ambient-glow-1" />
+            <div className="ambient-glow ambient-glow-2" />
+
             <AppSidebar />
-            <div className="flex flex-col flex-1">
-              <header className="flex items-center justify-between px-6 py-4 border-b border-border h-16 bg-card/30 backdrop-blur-sm">
+            <div className="flex flex-col flex-1 relative z-10">
+              <header className="flex items-center justify-between px-6 py-4 border-b border-border/30 h-16 bg-background/40 backdrop-blur-xl supports-[backdrop-filter]:bg-background/20">
                 <div className="flex items-center gap-4 flex-1">
                   <SidebarTrigger data-testid="button-sidebar-toggle" />
                   <GlobalSearch />
